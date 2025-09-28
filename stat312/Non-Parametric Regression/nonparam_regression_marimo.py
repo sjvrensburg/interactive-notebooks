@@ -26,23 +26,35 @@ def __(mo):
         ### Key Methods Covered:
 
         **📊 k-Nearest Neighbours (k-NN) Regression:**
+
         - Predicts by averaging response values from the k most similar observations
+
         - Embodies the principle of **local smoothness**
+
         - Simple but powerful for complex relationships
 
         **🔧 Nadaraya-Watson Kernel Regression:**
+
         - Uses kernel-weighted local averaging for smooth function estimates
+
         - Provides continuous, differentiable predictions
+
         - Flexible bandwidth parameter controls smoothness
 
         **📈 Key Advantages:**
+
         - No assumptions about functional form
+
         - Can capture complex, non-linear relationships
+
         - Adaptable to local data patterns
 
         **⚠️ Considerations:**
+
         - Requires larger sample sizes
+
         - Can struggle in sparse data regions
+
         - Computational complexity increases with data size
         """
     )
@@ -227,7 +239,7 @@ def __(mo):
         r"""
         ## Query Point Selection
 
-        Use the slider below to select a query point for detailed analysis of nearest neighbors and kernel weights.
+        Use the slider below to select a query point for detailed analysis of nearest neighbours and kernel weights.
         """
     )
     return
@@ -299,7 +311,7 @@ def __(mo):
         label="Query Point (x-value):"
     )
 
-    show_neighbors = mo.ui.checkbox(
+    show_neighbours = mo.ui.checkbox(
         value=False, label="Show Nearest Neighbours for Query Point"
     )
 
@@ -308,9 +320,9 @@ def __(mo):
 
     {k_slider}
     {query_point_knn_slider}
-    {show_neighbors}
+    {show_neighbours}
     """)
-    return k_slider, query_point_knn_slider, show_neighbors
+    return k_slider, query_point_knn_slider, show_neighbours
 
 
 @app.cell
@@ -320,7 +332,7 @@ def __(
     k_slider,
     np,
     query_point_knn_slider,
-    show_neighbors,
+    show_neighbours,
     x_grid,
     x_test,
     x_train,
@@ -391,17 +403,17 @@ def __(
         name='Test Predictions'
     ))
 
-    # Show nearest neighbors for the query point if requested
-    if show_neighbors.value:
+    # Show nearest neighbours for the query point if requested
+    if show_neighbours.value:
         # Use the query point from slider
         query_point_knn = query_point_knn_slider.value
         query_idx_knn = abs(x_grid - query_point_knn).argmin()
         query_prediction = knn_model.predict([[query_point_knn]])[0]
 
-        # Find k nearest neighbors
+        # Find k nearest neighbours
         distances_knn, indices_knn = knn_model.kneighbors([[query_point_knn]], n_neighbors=k_value)
-        neighbor_x_knn = x_train[indices_knn[0]]
-        neighbor_y_knn = y_train[indices_knn[0]]
+        neighbour_x_knn = x_train[indices_knn[0]]
+        neighbour_y_knn = y_train[indices_knn[0]]
 
         # Highlight the query point
         knn_fig.add_trace(go.Scatter(
@@ -412,17 +424,17 @@ def __(
             name=f'Query Point (x={query_point_knn:.1f})'
         ))
 
-        # Highlight nearest neighbors
+        # Highlight nearest neighbours
         knn_fig.add_trace(go.Scatter(
-            x=neighbor_x_knn,
-            y=neighbor_y_knn,
+            x=neighbour_x_knn,
+            y=neighbour_y_knn,
             mode='markers',
             marker=dict(color='orange', size=12, line=dict(color='red', width=2)),
-            name=f'{k_value} Nearest Neighbors'
+            name=f'{k_value} Nearest Neighbours'
         ))
 
-        # Draw lines to neighbors
-        for nx, ny in zip(neighbor_x_knn, neighbor_y_knn):
+        # Draw lines to neighbours
+        for nx, ny in zip(neighbour_x_knn, neighbour_y_knn):
             knn_fig.add_trace(go.Scatter(
                 x=[query_point_knn, nx],
                 y=[query_prediction, ny],
@@ -917,7 +929,7 @@ def __(
 
     **Note:** These metrics are calculated on the test set that was held out from training. This provides an unbiased estimate of model performance on unseen data.
 
-    **Key Insight:** Lower MSE and higher R² indicate better performance. The test set evaluation helps us understand which method generalizes better to new data points.
+    **Key Insight:** Lower MSE and higher R² indicate better performance. The test set evaluation helps us understand which method generalises better to new data points.
     """)
     return
 
@@ -944,12 +956,12 @@ def __(mo):
 
         **Query Point Exploration:**
         - Use the query point sliders to see exactly how predictions are made at specific locations
-        - Observe how nearest neighbors or kernel weights change across the input space
-        - Understanding local prediction behavior helps build intuition
+        - Observe how nearest neighbours or kernel weights change across the input space
+        - Understanding local prediction behaviour helps build intuition
 
         ### Method Comparison
 
-        - **k-NN**: Step-wise predictions, focuses on exact neighbors
+        - **k-NN**: Step-wise predictions, focuses on exact neighbours
         - **Nadaraya-Watson**: Smooth continuous predictions, uses weighted averaging
         - **Performance**: Compare test set MSE and R² to evaluate which works better for your data
 
@@ -958,7 +970,7 @@ def __(mo):
         - **Test set evaluation** provides unbiased performance estimates
         - **Different data patterns** may favor different methods
         - **Parameter tuning** is essential for optimal performance
-        - **Visual inspection** of fits helps understand method behavior
+        - **Visual inspection** of fits helps understand method behaviour
         """
     )
     return
