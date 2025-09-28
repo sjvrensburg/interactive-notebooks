@@ -1,0 +1,92 @@
+# Python ignores
+*.pyc
+*.pyo
+*.pyd
+__pycache__/
+*.egg-info/
+.pytest_cache/
+*.egg
+*.eggs/
+*.whl
+*.tar.gz
+*.pex
+*.prof
+*.coverage
+.coverage.*
+htmlcov/
+.tox/
+.venv/
+venv/
+env/
+ENV/
+*.py[cd]
+*.pyi
+*.cover
+*.pyproj
+*.pydevproject
+*.mypy_cache/
+.dmypy.json
+dmypy.json
+
+# Backups and temps
+*~
+*.swp
+*.tmp
+*.bak
+*.backup.py
+.DS_Store
+Thumbs.db
+*.log
+*.pid
+*.seed
+*.rdb
+*.pid.lock
+
+# Moodle-specific (exclude zips, HTML exports if not needed in repo)
+*.zip
+*_moodle_ready.html
+*_moodle.zip
+MOODLE_*.md
+
+# Editor/IDE files
+.idea/
+.vscode/
+*.sublime-project
+*.sublime-workspace
+
+# OS-specific
+.Apple*
+ehthumbs.db
+Icon?
+
+# Node.js / Build tools (if using any frontend builds)
+node_modules/
+npm-debug.log
+yarn-error.log
+.pnpm-debug.log
+
+# But DO NOT ignore WASM builds – we want to commit these for hosting!
+# !dist/
+# !**/dist/**
+
+# Other common ignores
+*.class
+*.jar
+*.war
+*.ear
+*.nar
+*.iml
+target/
+build/
+out/
+dist-old/  # If you have renamed old builds
+
+# Large files or archives (consider Git LFS if needed for fonts/WASM binaries)
+*.iso
+*.dmg
+*.img
+
+# AI agents' leftovers
+CLAUDE.md
+CRUSH.md
+WARP.md
