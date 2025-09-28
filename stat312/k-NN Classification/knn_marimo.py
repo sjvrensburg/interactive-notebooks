@@ -14,31 +14,35 @@ def __():
 def __(mo):
     mo.md(
         r"""
-        # k-Nearest Neighbors (k-NN) Classification Interactive Tutorial
+        # k-Nearest Neighbours (k-NN) Classification Interactive Tutorial
 
-        Welcome to this interactive tutorial on **k-Nearest Neighbors Classification**! This notebook will help you understand the fundamental concepts of k-NN through hands-on experimentation.
+        Welcome to this interactive tutorial on **k-Nearest Neighbours Classification**! This notebook will help you understand the fundamental concepts of k-NN through hands-on experimentation.
 
         ## What is k-NN Classification?
 
-        The **k-Nearest Neighbors** algorithm is one of the simplest and most intuitive machine learning algorithms. It classifies data points based on the class of their nearest neighbors in the feature space.
+        The **k-Nearest Neighbours** algorithm is one of the simplest and most intuitive machine learning algorithms. It classifies data points based on the class of their nearest neighbours in the feature space.
 
         ### Key Concepts:
 
         **📊 The Algorithm:**
-        1. Choose a value for **k** (number of neighbors to consider)
+
+        1. Choose a value for **k** (number of neighbours to consider)
         2. Calculate the distance from the new point to all training points
         3. Find the **k closest** training points
-        4. Assign the **majority class** among these k neighbors
+        4. Assign the **majority class** amongst these k neighbours
 
         **📏 Distance Metrics:**
+
         - **Euclidean Distance**: √[(x₁-x₂)² + (y₁-y₂)²] (most common)
         - **Manhattan Distance**: |x₁-x₂| + |y₁-y₂|
-        - **Minkowski Distance**: Generalization of the above
+        - **Minkowski Distance**: Generalisation of the above
 
         **🎯 Decision Boundary:**
+
         The decision boundary separates different classes in the feature space. With k-NN, this boundary becomes smoother as k increases.
 
         **🔧 Choosing k:**
+
         - **Small k (k=1)**: More sensitive to noise, complex boundaries
         - **Large k**: Smoother boundaries, may oversimplify
         - **Odd k**: Helps avoid ties in binary classification
@@ -90,7 +94,7 @@ def __(mo):
     )
 
     cluster_std_slider = mo.ui.slider(
-        start=0.5, stop=3.0, step=0.1, value=1.5, label="Cluster separation:"
+        start=0.5, stop=3.0, step=0.1, value=1.5, label="Class separation:"
     )
 
     random_state_slider = mo.ui.slider(
@@ -118,7 +122,7 @@ def __(cluster_std_slider, go, make_blobs, n_samples_slider, np, random_state_sl
         X, y = make_blobs(
             n_samples=n_samples_slider.value,
             centers=2,
-            cluster_std=cluster_std_slider.value,
+            cluster_std=3.5 - cluster_std_slider.value,  # Fixed: inverted for intuitive behavior
             random_state=random_state_slider.value,
             center_box=(-5, 5)
         )
@@ -174,7 +178,7 @@ def __(mo):
 def __(mo):
     # UI control for k value
     k_slider = mo.ui.slider(
-        start=1, stop=20, step=1, value=5, label="k (number of neighbors):"
+        start=1, stop=20, step=1, value=5, label="k (number of neighbours):"
     )
 
     mo.md(f"""
@@ -246,7 +250,7 @@ def __(KNeighborsClassifier, X, go, k_slider, np, y):
 
         # Update layout
         fig.update_layout(
-            title=f'k-NN Classification with k={k_val}<br>Decision Boundary Visualization',
+            title=f'k-NN Classification with k={k_val}<br>Decision Boundary Visualisation',
             xaxis_title='Feature 1',
             yaxis_title='Feature 2',
             width=800,
@@ -265,16 +269,15 @@ def __(KNeighborsClassifier, X, go, k_slider, np, y):
 @app.cell
 def __(mo):
     mo.md(r"""
-    ## 📊 Performance Evaluation: The Elbow Plot
+    ## 📊 Performance Evaluation
 
     To properly evaluate our k-NN model, we need to split our data into **training** and **testing** sets. This prevents overfitting and gives us a realistic estimate of how the model will perform on new, unseen data.
 
     **Train-Test Split Strategy:**
+
     - **70% Training Data**: Used to fit the k-NN model
     - **30% Testing Data**: Used to evaluate model performance
     - **Stratified Sampling**: Maintains the same class proportions in both splits
-
-    The elbow plot below shows how accuracy changes with different values of k:
     """)
     return
 
@@ -284,7 +287,6 @@ def __(
     KNeighborsClassifier,
     X,
     accuracy_score,
-    go,
     k_slider,
     mo,
     np,
@@ -321,123 +323,44 @@ def __(
     # Generate performance data
     k_vals, train_acc, test_acc = evaluate_k_values(X, y)
 
-    # Create elbow plot using Plotly
-    elbow_fig = go.Figure()
-
-    # Add training accuracy line
-    elbow_fig.add_trace(go.Scatter(
-        x=list(k_vals),
-        y=train_acc,
-        mode='lines+markers',
-        name='Training Accuracy',
-        line=dict(color='blue', width=2),
-        marker=dict(size=6, symbol='circle')
-    ))
-
-    # Add testing accuracy line
-    elbow_fig.add_trace(go.Scatter(
-        x=list(k_vals),
-        y=test_acc,
-        mode='lines+markers',
-        name='Testing Accuracy',
-        line=dict(color='red', width=2),
-        marker=dict(size=6, symbol='square')
-    ))
-
-    # Highlight the current k value
+    # Find best k and current k for summary
     current_k = k_slider.value
-    if current_k <= len(k_vals):
-        current_train_acc = train_acc[current_k - 1]
-        current_test_acc = test_acc[current_k - 1]
-
-        # Add highlighted points for current k
-        elbow_fig.add_trace(go.Scatter(
-            x=[current_k],
-            y=[current_train_acc],
-            mode='markers',
-            marker=dict(color='blue', size=12, symbol='circle'),
-            name=f'Current k={current_k} (Train)',
-            showlegend=False
-        ))
-
-        elbow_fig.add_trace(go.Scatter(
-            x=[current_k],
-            y=[current_test_acc],
-            mode='markers',
-            marker=dict(color='red', size=12, symbol='square'),
-            name=f'Current k={current_k} (Test)',
-            showlegend=False
-        ))
-
-        # Add vertical line for current k
-        elbow_fig.add_vline(
-            x=current_k,
-            line_dash="dot",
-            line_color="gray",
-            opacity=0.7,
-            annotation_text=f"Current k={current_k}"
-        )
-
-    # Find and annotate best k
     best_k = k_vals[np.argmax(test_acc)]
     best_acc = max(test_acc)
-
-    # Add annotation for best k
-    elbow_fig.add_annotation(
-        x=best_k,
-        y=best_acc,
-        text=f"Best k={best_k}<br>Acc={best_acc:.3f}",
-        showarrow=True,
-        arrowhead=2,
-        arrowcolor="green",
-        bgcolor="lightgreen",
-        bordercolor="green",
-        font=dict(color="green", size=10)
-    )
-
-    # Update layout
-    elbow_fig.update_layout(
-        title='Model Performance vs. k Value (Elbow Plot)',
-        xaxis_title='k (Number of Neighbors)',
-        yaxis_title='Accuracy',
-        width=800,
-        height=500,
-        hovermode='x unified',
-        yaxis=dict(range=[0.5, 1.05])
-    )
 
     # Calculate dataset info
     X_train, X_test, y_train, y_test = train_test_split(
         X, y, test_size=0.3, random_state=42, stratify=y
     )
 
-    # Create performance summary
+    # Create performance summary (elbow plot removed as requested)
     performance_summary = mo.md(f"""
     📈 **Performance Summary:**
 
     **Dataset Split:**
+
     - **Training Set**: {len(X_train)} samples ({len(X_train)/len(X)*100:.1f}%)
     - **Testing Set**: {len(X_test)} samples ({len(X_test)/len(X)*100:.1f}%)
 
     **Model Performance:**
+
     - **Current k={current_k}**: Test Accuracy = {test_acc[current_k-1]:.3f}
     - **Best k={best_k}**: Test Accuracy = {best_acc:.3f}
 
-    **Understanding the Plot:**
-    - **Training Accuracy** (blue): How well the model fits the training data
-    - **Test Accuracy** (red): How well the model generalizes to new data
-    - **Gap between lines**: Indicates overfitting (larger gap = more overfitting)
-    - **Optimal k**: Balances bias and variance for best generalization
+    **Key Concepts:**
+
+    - **Training vs Testing**: Testing accuracy indicates how well the model generalises to new data
+    - **Optimal k**: Balances bias and variance for best generalisation
+    - **Cross-validation**: The best approach for selecting optimal k in practice
     """)
 
-    # Display both the plot and summary
-    (elbow_fig, performance_summary)
+    # Display the summary
+    performance_summary
 
     return (
         best_acc,
         best_k,
         current_k,
-        elbow_fig,
         evaluate_k_values,
         k_vals,
         performance_summary,
@@ -453,9 +376,10 @@ def __(mo):
         ## 🎯 Interactive Prediction
 
         **Instructions:**
+
         1. Enter x and y coordinates below to add a new point for prediction
         2. The algorithm will predict its class using the current k value
-        3. The k nearest neighbors will be highlighted
+        3. The k nearest neighbours will be highlighted
         4. The prediction will be displayed with the plot
 
         **Try different points to see how k-NN classification works!**
@@ -536,7 +460,7 @@ def __(
         prediction = _pred_knn.predict(new_point)[0]
         probabilities = _pred_knn.predict_proba(new_point)[0]
 
-        # Find k nearest neighbors
+        # Find k nearest neighbours
         distances, indices = _pred_knn.kneighbors(new_point, n_neighbors=k_slider.value)
         neighbor_points = X[indices[0]]
 
@@ -557,7 +481,7 @@ def __(
             )
         )
 
-        # Highlight k nearest neighbors
+        # Highlight k nearest neighbours
         pred_fig.add_trace(
             go.Scatter(
                 x=neighbor_points[:, 0],
@@ -569,12 +493,12 @@ def __(
                     symbol='circle-open',
                     line=dict(color='green', width=3)
                 ),
-                name=f'{k_slider.value} Nearest Neighbors',
+                name=f'{k_slider.value} Nearest Neighbours',
                 showlegend=True
             )
         )
 
-        # Draw lines to nearest neighbors
+        # Draw lines to nearest neighbours
         for _neighbor in neighbor_points:
             pred_fig.add_trace(
                 go.Scatter(
@@ -600,9 +524,10 @@ def __(
 
 **Confidence:** {probabilities[prediction]:.3f}
 
-**k={k_slider.value} Nearest Neighbors:**
-- Class 0: {class_counts[0]} neighbors
-- Class 1: {class_counts[1]} neighbors
+**k={k_slider.value} Nearest Neighbours:**
+
+- Class 0: {class_counts[0]} neighbours
+- Class 1: {class_counts[1]} neighbours
 
 **Decision:** Majority vote = Class {prediction}
         """
@@ -633,14 +558,15 @@ def __(mo):
         r"""
         ## 🎓 Key Takeaways
 
-        **What you've learned:**
+        **What you've learnt:**
 
-        1. **k-NN Basics**: The algorithm classifies points based on the majority class of their k nearest neighbors
+        1. **k-NN Basics**: The algorithm classifies points based on the majority class of their k nearest neighbours
 
         2. **Impact of k**:
+
            - **Small k**: More sensitive to noise, complex decision boundaries
            - **Large k**: Smoother boundaries, may oversimplify patterns
-           - **Optimal k**: Found using validation/cross-validation (see elbow plot)
+           - **Optimal k**: Found using validation/cross-validation
 
         3. **Decision Boundaries**: Visual representation of how the algorithm separates different classes
 
@@ -649,12 +575,14 @@ def __(mo):
         5. **Interactive Prediction**: Real-time classification demonstrates how the algorithm works
 
         **Best Practices:**
+
         - Choose k using cross-validation
         - Use odd values of k to avoid ties (in binary classification)
-        - Scale/normalize features when they have different units
+        - Scale/normalise features when they have different units
         - Consider computational cost for large datasets
 
         **Next Steps:**
+
         - Experiment with different datasets
         - Try different distance metrics
         - Explore feature scaling effects
