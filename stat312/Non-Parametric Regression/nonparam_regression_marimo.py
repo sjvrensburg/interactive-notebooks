@@ -1,6 +1,6 @@
 import marimo
 
-__generated_with = "0.8.5"
+__generated_with = "0.16.2"
 app = marimo.App(width="medium")
 
 
@@ -210,8 +210,6 @@ def __(function_selector, go, n_points_slider, noise_level_slider, np, test_spli
         height=500,
         showlegend=True
     )
-
-    data_fig
 
     return (
         data_fig,
@@ -453,8 +451,6 @@ def __(
         showlegend=True
     )
 
-    knn_fig
-
     return (
         k_value,
         knn_fig,
@@ -544,8 +540,6 @@ def __(KERNELS, go, np):
         height=400,
         showlegend=True
     )
-
-    kernel_fig
 
     return kernel_fig, kernel_func, kernel_name, kernel_vals, u_vals
 
@@ -764,8 +758,6 @@ def __(
         showlegend=True
     )
 
-    nw_fig
-
     return (
         bandwidth,
         nw_fig,
@@ -891,8 +883,6 @@ def __(
 
     comparison_fig.update_xaxes(title_text="Predictor (x)")
     comparison_fig.update_yaxes(title_text="Response (y)")
-
-    comparison_fig
 
     return (
         comp_kernel_func,
