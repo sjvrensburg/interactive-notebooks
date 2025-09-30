@@ -249,8 +249,11 @@ def __(
 
     # Generate Mermaid diagram
     current_tree_mermaid = tree_to_mermaid(current_tree)
+    
+    # Also generate text representation for WASM compatibility
+    current_tree_text = export_text(current_tree, feature_names=["X[0]", "X[1]"])
 
-    return current_tree, current_tree_mermaid, tree_to_mermaid
+    return current_tree, current_tree_mermaid, current_tree_text, tree_to_mermaid
 
 
 @app.cell
@@ -261,18 +264,34 @@ def __(
     ccp_alpha_slider,
     current_tree,
     current_tree_mermaid,
+    current_tree_text,
     mo,
     y_test,
     y_train,
 ):
+    import sys
+    
     # Calculate metrics for current tree
     _train_acc = accuracy_score(y_train, current_tree.predict(X_train))
     _test_acc = accuracy_score(y_test, current_tree.predict(X_test))
     _n_nodes = current_tree.tree_.node_count
 
+    # Detect if running in WASM environment (Pyodide)
+    _is_wasm = 'pyodide' in sys.modules or 'emscripten' in sys.modules
+    
+    if _is_wasm:
+        # Use text representation in WASM
+        _tree_viz = mo.md(f"""**Text-based Tree (WASM mode):**
+```
+{current_tree_text}
+```""")
+    else:
+        # Use Mermaid for interactive viewing
+        _tree_viz = mo.mermaid(current_tree_mermaid)
+    
     # Create the tree diagram with metrics
     _tree_content = mo.vstack([
-        mo.mermaid(current_tree_mermaid),
+        _tree_viz,
         mo.md(f"""
         **Current Tree Metrics:**
         Training Accuracy: {_train_acc:.3f} | Test Accuracy: {_test_acc:.3f} | Nodes: {_n_nodes} | α: {ccp_alpha_slider.value:.3f} {'**(Unpruned)**' if ccp_alpha_slider.value == 0.0 else '**(Pruned)**'}
