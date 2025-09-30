@@ -1,6 +1,6 @@
 # Interactive Statistical Learning Notebooks
 
-🎓 **Interactive demonstrations for STAT312 (Statistical Learning)** - Built with [Marimo](https://marimo.io/)
+🎓 **Interactive demonstrations for statistical learning** - Built with [Marimo](https://marimo.io/)
 
 [![GitHub Pages](https://img.shields.io/badge/GitHub%20Pages-Live%20Demos-blue)](https://sjvrensburg.github.io/interactive-notebooks/)
 [![License: CC BY-SA 4.0](https://img.shields.io/badge/License-CC%20BY--SA%204.0-lightgrey.svg)](https://creativecommons.org/licenses/by-sa/4.0/)
@@ -10,13 +10,15 @@
 
 Explore these interactive statistical learning concepts directly in your browser:
 
-### 🔍 [k-Nearest Neighbors Classification](https://sjvrensburg.github.io/interactive-notebooks/stat312/k-NN%20Classification/knn_interactive_wasm/)
+### STAT312: Statistical Learning
+
+#### 🔍 [k-Nearest Neighbours Classification](https://sjvrensburg.github.io/interactive-notebooks/stat312/k-NN%20Classification/knn_interactive_wasm/)
 
 **Learn the fundamentals of k-NN classification through interactive exploration:**
 
-- 📊 Visualize decision boundaries in real-time
+- 📊 Visualise decision boundaries in real-time
 - 🎛️ Adjust k values and see immediate effects
-- 📈 Understand bias-variance tradeoffs
+- 📈 Understand bias-variance trade-offs
 - 🎯 Make predictions on custom data points
 - 📋 Compare training vs. testing performance
 
@@ -34,23 +36,38 @@ Explore these interactive statistical learning concepts directly in your browser
 
 [📖 View Documentation](./stat312/KDE/README.md) | [💻 Run Locally](./stat312/KDE/knn_marimo.py)
 
-### 📈 [Non-Parametric Regression](https://sjvrensburg.github.io/interactive-notebooks/stat312/Non-Parametric%20Regression/nonparam_regression_wasm/)
+#### 📈 [Non-Parametric Regression](https://sjvrensburg.github.io/interactive-notebooks/stat312/Non-Parametric%20Regression/nonparam_regression_wasm/)
 
 **Explore kernel methods and non-parametric regression techniques:**
 
 - 🔧 Compare k-NN vs. Nadaraya-Watson regression
 - 🎚️ Experiment with different kernel functions
 - 📐 Adjust bandwidth parameters interactively
-- 🎪 Visualize kernel weights and local smoothing
+- 🎪 Visualise kernel weights and local smoothing
 - 📊 Evaluate model performance on test data
 
 [📖 View Documentation](./stat312/Non-Parametric%20Regression/README.md) | [💻 Run Locally](./stat312/Non-Parametric%20Regression/nonparam_regression_marimo.py)
+
+### STAT420: Data Science
+
+#### 🌳 [Classification and Regression Trees (CART)](https://sjvrensburg.github.io/interactive-notebooks/stat420/cart_wasm/)
+
+**Explore decision trees and cost-complexity pruning:**
+
+- 🌱 Control tree growth with maximum depth parameter
+- ✂️ Interactively prune trees using α parameter
+- 📊 Visualise complete tree structure with Mermaid diagrams
+- 🎨 Explore non-linear decision boundaries
+- 📈 Understand bias-variance trade-offs through pruning
+- 🔍 Zoom in/out on tree diagrams for detailed inspection
+
+[📖 View Documentation](./stat420/README.md) | [💻 Run Locally](./stat420/cart_pruning_marimo.py)
 
 ## 🎯 Learning Objectives
 
 These interactive notebooks help you:
 
-- **Visualize complex algorithms** through dynamic, real-time demonstrations
+- **Visualise complex algorithms** through dynamic, real-time demonstrations
 - **Understand parameter effects** by adjusting values and seeing immediate results
 - **Connect theory to practice** with mathematical formulations and hands-on exploration
 - **Develop intuition** for machine learning concepts through interactive experimentation
@@ -59,7 +76,7 @@ These interactive notebooks help you:
 ## 🛠️ Technology Stack
 
 - **[Marimo](https://marimo.io/)**: Reactive Python notebooks for interactive data science
-- **[Plotly](https://plotly.com/)**: Interactive visualizations that work seamlessly in browsers
+- **[Plotly](https://plotly.com/)**: Interactive visualisations that work seamlessly in browsers
 - **[Scikit-learn](https://scikit-learn.org/)**: Machine learning algorithms and utilities
 - **[NumPy](https://numpy.org/) & [SciPy](https://scipy.org/)**: Scientific computing foundations
 - **WebAssembly (WASM)**: Client-side execution for responsive interactions
@@ -109,19 +126,23 @@ marimo export html notebook.py --include-code -o output_directory/
 
 ```
 interactive-notebooks/
-├── stat312/                              # Course-specific demonstrations
+├── stat312/                              # STAT312: Statistical Learning
 │   ├── k-NN Classification/
 │   │   ├── knn_marimo.py                # Interactive k-NN tutorial
 │   │   ├── knn_interactive_wasm/        # WASM export for GitHub Pages
 │   │   └── README.md                    # Demo documentation
+│   ├── KDE/
+│   │   ├── kde_marimo.py                # Kernel Density Estimation tutorial
+│   │   ├── kde_wasm/                    # WASM export for GitHub Pages
+│   │   └── README.md                    # Demo documentation
 │   └── Non-Parametric Regression/
-│   |   ├── nonparam_regression_marimo.py # Kernel regression tutorial
-│   |   ├── nonparam_regression_wasm/     # WASM export for GitHub Pages
-│   |   └── README.md                     # Demo documentation
-|   └── KDE/
-│       ├── kde_marimo.py                 # Kernel Density Estimation tutorial
-│       ├── kde_wasm/                     # WASM export for GitHub Pages
+│       ├── nonparam_regression_marimo.py # Kernel regression tutorial
+│       ├── nonparam_regression_wasm/     # WASM export for GitHub Pages
 │       └── README.md                     # Demo documentation
+├── stat420/                              # STAT420: Data Science
+│   ├── cart_pruning_marimo.py           # Decision trees and pruning tutorial
+│   ├── cart_wasm/                       # WASM export for GitHub Pages
+│   └── README.md                        # Demo documentation
 ├── requirements.txt                      # Python dependencies
 ├── WARP.md                              # Development guide for AI assistants
 └── README.md                            # This file
@@ -129,17 +150,28 @@ interactive-notebooks/
 
 ## 🎓 Educational Context
 
-**Course**: STAT312 (Statistical Learning)  
+### STAT312: Statistical Learning
 **Focus**: Interactive exploration of machine learning fundamentals
 
 **Key Topics**:
-
-- k-Nearest Neighbors (Classification & Regression)
+- k-Nearest Neighbours (Classification & Regression)
 - Non-parametric regression methods
+- Kernel density estimation
 - Kernel methods and bandwidth selection  
-- Bias-variance tradeoff visualization
+- Bias-variance trade-off visualisation
 - Cross-validation and model evaluation
 - Decision boundary analysis
+
+### STAT420: Data Science
+**Focus**: Tree-based methods and model complexity
+
+**Key Topics**:
+- Classification and Regression Trees (CART)
+- Decision tree construction and splitting criteria
+- Gini impurity and information gain
+- Cost-complexity pruning
+- Overfitting and regularisation techniques
+- Model interpretability
 
 **Target Audience**:
 
@@ -148,9 +180,9 @@ interactive-notebooks/
 - Educators teaching statistical concepts
 - Self-learners exploring ML algorithms
 
-## 📄 License
+## 📄 Licence
 
-This work is licensed under a [Creative Commons Attribution-ShareAlike 4.0 International License](https://creativecommons.org/licenses/by-sa/4.0/).
+This work is licenced under a [Creative Commons Attribution-ShareAlike 4.0 International Licence](https://creativecommons.org/licences/by-sa/4.0/).
 
 You are free to:
 
@@ -160,7 +192,7 @@ You are free to:
 Under the following terms:
 
 - **Attribution** — You must give appropriate credit and indicate if changes were made
-- **ShareAlike** — If you remix, transform, or build upon the material, you must distribute your contributions under the same license
+- **ShareAlike** — If you remix, transform, or build upon the material, you must distribute your contributions under the same licence
 
 ## 🤝 Contributing
 
