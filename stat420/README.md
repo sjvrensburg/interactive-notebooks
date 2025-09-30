@@ -159,7 +159,7 @@ For optimal experience, use a desktop or tablet with a screen width of at least 
 
 **Primary:**
 - Statistics students studying classification algorithms
-- STAT420 course participants exploring tree-based methods
+- STAT420 (Quantitative Data Analysis) course participants exploring tree-based methods
 - Data science students learning supervised learning techniques
 
 **Secondary:**

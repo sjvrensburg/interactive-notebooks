@@ -1,6 +1,6 @@
 # Interactive Statistical Learning Notebooks
 
-🎓 **Interactive demonstrations for statistical learning** - Built with [Marimo](https://marimo.io/)
+🎓 **Interactive demonstrations for Advanced Data Analytics and Quantitative Data Analysis** - Built with [Marimo](https://marimo.io/)
 
 [![GitHub Pages](https://img.shields.io/badge/GitHub%20Pages-Live%20Demos-blue)](https://sjvrensburg.github.io/interactive-notebooks/)
 [![License: CC BY-SA 4.0](https://img.shields.io/badge/License-CC%20BY--SA%204.0-lightgrey.svg)](https://creativecommons.org/licenses/by-sa/4.0/)
@@ -10,7 +10,7 @@
 
 Explore these interactive statistical learning concepts directly in your browser:
 
-### STAT312: Statistical Learning
+### STAT312: Advanced Data Analytics
 
 #### 🔍 [k-Nearest Neighbours Classification](https://sjvrensburg.github.io/interactive-notebooks/stat312/k-NN%20Classification/knn_interactive_wasm/)
 
@@ -48,7 +48,7 @@ Explore these interactive statistical learning concepts directly in your browser
 
 [📖 View Documentation](./stat312/Non-Parametric%20Regression/README.md) | [💻 Run Locally](./stat312/Non-Parametric%20Regression/nonparam_regression_marimo.py)
 
-### STAT420: Data Science
+### STAT420: Quantitative Data Analysis
 
 #### 🌳 [Classification and Regression Trees (CART)](https://sjvrensburg.github.io/interactive-notebooks/stat420/cart_wasm/)
 
@@ -126,7 +126,7 @@ marimo export html notebook.py --include-code -o output_directory/
 
 ```
 interactive-notebooks/
-├── stat312/                              # STAT312: Statistical Learning
+├── stat312/                              # STAT312: Advanced Data Analytics
 │   ├── k-NN Classification/
 │   │   ├── knn_marimo.py                # Interactive k-NN tutorial
 │   │   ├── knn_interactive_wasm/        # WASM export for GitHub Pages
@@ -139,7 +139,7 @@ interactive-notebooks/
 │       ├── nonparam_regression_marimo.py # Kernel regression tutorial
 │       ├── nonparam_regression_wasm/     # WASM export for GitHub Pages
 │       └── README.md                     # Demo documentation
-├── stat420/                              # STAT420: Data Science
+├── stat420/                              # STAT420: Quantitative Data Analysis
 │   ├── cart_pruning_marimo.py           # Decision trees and pruning tutorial
 │   ├── cart_wasm/                       # WASM export for GitHub Pages
 │   └── README.md                        # Demo documentation
@@ -150,7 +150,7 @@ interactive-notebooks/
 
 ## 🎓 Educational Context
 
-### STAT312: Statistical Learning
+### STAT312: Advanced Data Analytics
 **Focus**: Interactive exploration of machine learning fundamentals
 
 **Key Topics**:
@@ -162,7 +162,7 @@ interactive-notebooks/
 - Cross-validation and model evaluation
 - Decision boundary analysis
 
-### STAT420: Data Science
+### STAT420: Quantitative Data Analysis
 **Focus**: Tree-based methods and model complexity
 
 **Key Topics**:
