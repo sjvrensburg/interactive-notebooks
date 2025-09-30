@@ -24,7 +24,7 @@ Explore these interactive statistical learning concepts directly in your browser
 
 [📖 View Documentation](./stat312/k-NN%20Classification/README.md) | [💻 Run Locally](./stat312/k-NN%20Classification/knn_marimo.py)
 
-### 📊 [Kernel Density Estimation](https://sjvrensburg.github.io/interactive-notebooks/stat312/KDE/kde_wasm/)
+#### 📊 [Kernel Density Estimation](https://sjvrensburg.github.io/interactive-notebooks/stat312/KDE/kde_wasm/)
 
 **Learn the fundamentals of KDE through interactive exploration:**
 
