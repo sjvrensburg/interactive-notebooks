@@ -228,7 +228,7 @@ def __(mo, actual_iterations, final_ari, iteration_history):
 
 @app.cell
 def __(iteration_slider, X_data, ConvexHull, go, np, px, iteration_history):
-    # Create visualization for selected iteration
+    # Create visualisation for selected iteration
     print(f"\n🎨 Rendering iteration {iteration_slider.value}...")
 
     # Get selected iteration data
@@ -238,8 +238,8 @@ def __(iteration_slider, X_data, ConvexHull, go, np, px, iteration_history):
     # Create figure
     evolution_fig = go.Figure()
 
-    # Define colors for each cluster
-    cluster_colors = ['red', 'blue', 'green', 'orange', 'purple', 'cyan', 'magenta', 'brown']
+    # Define colours for each cluster
+    cluster_colours = ['red', 'blue', 'green', 'orange', 'purple', 'cyan', 'magenta', 'brown']
 
     # Add convex hulls for each cluster in this iteration
     hull_count = 0
@@ -257,9 +257,9 @@ def __(iteration_slider, X_data, ConvexHull, go, np, px, iteration_history):
                 # Close the polygon
                 hull_pts_closed = np.vstack([hull_pts, hull_pts[0]])
 
-                # Convert color to RGB for fillcolor
-                fill_color_hex = px.colors.qualitative.Plotly[cluster_idx % len(px.colors.qualitative.Plotly)]
-                fill_color_rgb = px.colors.hex_to_rgb(fill_color_hex)
+                # Convert colour to RGB for fillcolor
+                fill_colour_hex = px.colors.qualitative.Plotly[cluster_idx % len(px.colors.qualitative.Plotly)]
+                fill_colour_rgb = px.colors.hex_to_rgb(fill_colour_hex)
 
                 # Add hull trace
                 evolution_fig.add_trace(go.Scatter(
@@ -267,8 +267,8 @@ def __(iteration_slider, X_data, ConvexHull, go, np, px, iteration_history):
                     y=hull_pts_closed[:, 1],
                     mode='lines',
                     fill='toself',
-                    fillcolor=f'rgba({fill_color_rgb[0]}, {fill_color_rgb[1]}, {fill_color_rgb[2]}, 0.2)',
-                    line=dict(color=cluster_colors[cluster_idx % len(cluster_colors)], width=2),
+                    fillcolor=f'rgba({fill_colour_rgb[0]}, {fill_colour_rgb[1]}, {fill_colour_rgb[2]}, 0.2)',
+                    line=dict(color=cluster_colours[cluster_idx % len(cluster_colours)], width=2),
                     name=f'Cluster {cluster_idx}',
                     showlegend=False
                 ))
@@ -278,14 +278,14 @@ def __(iteration_slider, X_data, ConvexHull, go, np, px, iteration_history):
 
     print(f"✅ Created {hull_count} convex hulls")
 
-    # Add data points colored by cluster
+    # Add data points coloured by cluster
     evolution_fig.add_trace(go.Scatter(
         x=X_data[:, 0],
         y=X_data[:, 1],
         mode='markers',
         marker=dict(
             size=8,
-            color=[cluster_colors[i % len(cluster_colors)] for i in iter_data['labels']],
+            color=[cluster_colours[i % len(cluster_colours)] for i in iter_data['labels']],
             opacity=0.8
         ),
         name='Data Points'
