@@ -48,6 +48,19 @@ Explore these interactive statistical learning concepts directly in your browser
 
 [📖 View Documentation](./stat312/Non-Parametric%20Regression/README.md) | [💻 Run Locally](./stat312/Non-Parametric%20Regression/nonparam_regression_marimo.py)
 
+#### 🎯 [K-Means Clustering](https://sjvrensburg.github.io/interactive-notebooks/stat312/K-Means%20Clustering/kmeans_wasm/)
+
+**Watch K-Means clustering evolve step-by-step:**
+
+- 🔄 Step through algorithm iterations with interactive slider
+- 🎨 Visualise cluster formation with convex hulls
+- 📍 Track centroid movement across iterations
+- 🎲 Control random initialization with seed parameter
+- 📊 Monitor convergence with Adjusted Rand Index (ARI)
+- ⚙️ Adjust k, sample size, and cluster separation
+
+[📖 View Documentation](./stat312/K-Means%20Clustering/README.md) | [💻 Run Locally](./stat312/K-Means%20Clustering/kmeans_marimo.py)
+
 ### STAT420: Quantitative Data Analysis
 
 #### 🌳 [Classification and Regression Trees (CART)](https://sjvrensburg.github.io/interactive-notebooks/stat420/cart_wasm/)
@@ -135,16 +148,20 @@ interactive-notebooks/
 │   │   ├── kde_marimo.py                # Kernel Density Estimation tutorial
 │   │   ├── kde_wasm/                    # WASM export for GitHub Pages
 │   │   └── README.md                    # Demo documentation
-│   └── Non-Parametric Regression/
-│       ├── nonparam_regression_marimo.py # Kernel regression tutorial
-│       ├── nonparam_regression_wasm/     # WASM export for GitHub Pages
-│       └── README.md                     # Demo documentation
+│   ├── Non-Parametric Regression/
+│   │   ├── nonparam_regression_marimo.py # Kernel regression tutorial
+│   │   ├── nonparam_regression_wasm/     # WASM export for GitHub Pages
+│   │   └── README.md                     # Demo documentation
+│   └── K-Means Clustering/
+│       ├── kmeans_marimo.py             # K-Means evolution tutorial
+│       ├── kmeans_wasm/                 # WASM export for GitHub Pages
+│       └── README.md                    # Demo documentation
 ├── stat420/                              # STAT420: Quantitative Data Analysis
 │   ├── cart_pruning_marimo.py           # Decision trees and pruning tutorial
 │   ├── cart_wasm/                       # WASM export for GitHub Pages
 │   └── README.md                        # Demo documentation
 ├── requirements.txt                      # Python dependencies
-├── WARP.md                              # Development guide for AI assistants
+├── CLAUDE.md                            # Development guide for AI assistants
 └── README.md                            # This file
 ```
 
@@ -157,7 +174,8 @@ interactive-notebooks/
 - k-Nearest Neighbours (Classification & Regression)
 - Non-parametric regression methods
 - Kernel density estimation
-- Kernel methods and bandwidth selection  
+- Kernel methods and bandwidth selection
+- K-Means clustering and unsupervised learning
 - Bias-variance trade-off visualisation
 - Cross-validation and model evaluation
 - Decision boundary analysis

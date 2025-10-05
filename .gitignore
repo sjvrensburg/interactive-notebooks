@@ -90,3 +90,6 @@ dist-old/  # If you have renamed old builds
 CLAUDE.md
 CRUSH.md
 WARP.md
+
+# Asciinema recordings
+*.cast
