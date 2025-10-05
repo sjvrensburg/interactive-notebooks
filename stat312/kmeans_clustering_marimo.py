@@ -294,7 +294,7 @@ def __(ConvexHull, X, go, iteration_slider, kmeans_centroids, kmeans_labels, sho
             # Use true cluster labels for coloring
             plot_labels = y_true
             n_true_clusters = len(np.unique(y_true))
-            colors = px.colors.qualitative.Viridis[:n_true_clusters]
+            colors = px.colors.qualitative.Plotly[:n_true_clusters]
             title_suffix = "(True Labels)"
         else:
             # Use current cluster assignments for coloring
