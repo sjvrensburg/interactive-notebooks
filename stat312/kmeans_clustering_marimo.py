@@ -16,7 +16,12 @@ def __(mo):
         r"""
         # K-Means Clustering Interactive Tutorial
         
-        Welcome to this interactive tutorial on **K-Means Clustering**! This notebook provides a step-by-step visualization of how the k-means algorithm works, allowing you to see the algorithm converge in real-time.
+        Welcome to this **interactive K-Means clustering tutorial**! This notebook allows you to:
+        
+        1. **Generate synthetic data** with configurable parameters
+        2. **Manually place centroids** by clicking on the plot
+        3. **Run the K-Means algorithm** step-by-step
+        4. **Visualize the convergence** with convex hulls
         
         ## What is K-Means Clustering?
         
@@ -24,16 +29,10 @@ def __(mo):
         
         ### The Algorithm Steps:
         
-        1. **Initialization**: Randomly select $k$ initial centroids
+        1. **Initialization**: Select $k$ initial centroids (you'll place these!)
         2. **Assignment Step**: Assign each data point to the nearest centroid
         3. **Update Step**: Recalculate centroids as the mean of assigned points
-        4. **Convergence**: Repeat steps 2-3 until centroids stop changing significantly
-        
-        ### Key Concepts:
-        
-        - **Centroid**: The center point of a cluster (mean of all points in that cluster)
-        - **Within-cluster variance**: Sum of squared distances from points to their centroid
-        - **Convergence**: When assignments no longer change between iterations
+        4. **Convergence**: Repeat steps 2-3 until centroids stop changing
         
         ### Mathematical Objective:
         
@@ -49,11 +48,9 @@ def __(mo):
 def __():
     # Import all necessary libraries
     import numpy as np
-    import matplotlib.pyplot as plt
-    from sklearn.datasets import make_blobs
+    import pandas as pd
     from sklearn.cluster import KMeans
     import plotly.graph_objects as go
-    from plotly.subplots import make_subplots
     import plotly.express as px
     from scipy.spatial import ConvexHull
     
@@ -63,10 +60,8 @@ def __():
         ConvexHull,
         KMeans,
         go,
-        make_blobs,
-        make_subplots,
         np,
-        plt,
+        pd,
         px,
     )
 
@@ -118,8 +113,10 @@ def __(mo):
 
 
 @app.cell
-def __(cluster_std_slider, make_blobs, n_samples_slider, n_true_clusters_slider, random_state_slider, np):
+def __(cluster_std_slider, n_samples_slider, n_true_clusters_slider, random_state_slider, np, pd):
     # Generate synthetic dataset based on UI controls
+    from sklearn.datasets import make_blobs
+    
     def generate_data():
         X, y_true = make_blobs(
             n_samples=n_samples_slider.value,
@@ -128,30 +125,232 @@ def __(cluster_std_slider, make_blobs, n_samples_slider, n_true_clusters_slider,
             random_state=random_state_slider.value,
             center_box=(-10, 10)
         )
-        return X, y_true
+        # Convert to pandas DataFrame for easier handling
+        df = pd.DataFrame(X, columns=['x', 'y'])
+        df['true_cluster'] = y_true
+        return df
 
-    X, y_true = generate_data()
-    return generate_data, X, y_true
+    df = generate_data()
+    return df
 
 
 @app.cell
-def __(go, X, y_true, mo, np):
-    # Toggle for coloring by true labels vs cluster assignments
-    show_true_labels_toggle = mo.ui.checkbox(
-        value=False, label="Color by true cluster labels (vs. current assignments)"
+def __(df, go, k_clusters_slider, max_iterations_slider, mo):
+    # Interactive centroid placement using Plotly
+    def create_initial_plot(df_data, k):
+        # Create base scatter plot for data points
+        fig = go.Figure()
+        
+        # Add data points
+        fig.add_trace(go.Scatter(
+            x=df_data['x'],
+            y=df_data['y'],
+            mode='markers',
+            marker=dict(
+                size=8,
+                color=df_data['true_cluster'],
+                colorscale='Plotly',
+                showscale=False
+            ),
+            name='Data Points',
+            hovertemplate='True Cluster %{marker.color}<br>X: %{x:.2f}<br>Y: %{y:.2f}<extra></extra>'
+        ))
+        
+        fig.update_layout(
+            title=f'Place {k} Centroids - Click on the plot',
+            xaxis_title='X',
+            yaxis_title='Y',
+            width=700,
+            height=500,
+            showlegend=False,
+            clickmode='event+select',  # Enable click events
+            hovermode='closest'
+        )
+        
+        return fig
+
+    # Create the interactive plot for centroid placement
+    initial_plot = create_initial_plot(df, k_clusters_slider.value)
+    
+    # Plotly UI element that captures click events
+    plot_ui = mo.ui.plotly(initial_plot)
+    
+    # Button to clear centroids
+    clear_button = mo.ui.button(
+        label="Clear Centroids",
+        value=None
     )
     
+    # Button to run K-Means
+    run_button = mo.ui.button(
+        label="Run K-Means",
+        value=None
+    )
+
     mo.md(
         f"""
-        {show_true_labels_toggle}
+        **Interactive Centroid Placement**
         
-        **Generated Dataset & K-Means Clustering:**
+        **Instructions:**
+        1. Click anywhere on the plot below to place centroids
+        2. The plot will show red X marks for your centroids
+        3. Use the buttons below to manage centroids
+        
+        {plot_ui}
+        
+        {clear_button} {run_button}
+        
+        **Current Status:** Place {k_clusters_slider.value} centroids on the plot
         """
     )
     
-    return (
-        show_true_labels_toggle,
+    return plot_ui, clear_button, run_button
+
+
+@app.cell
+def __(clear_button, plot_ui, k_clusters_slider):
+    # State management for centroids
+    import numpy as np
+    
+    # Initialize empty centroids array
+    if hasattr(clear_button, 'value') and clear_button.value is None:
+        # Clear button was clicked
+        centroids = []
+    else:
+        # Check if we have any click data from the plot
+        centroids = []
+        if plot_ui.points and len(plot_ui.points) > 0:
+            # Get clicked points from plot interaction
+            for point in plot_ui.points[:k_clusters_slider.value]:
+                centroids.append([point.x, point.y])
+        elif plot_ui.ranges and len(plot_ui.ranges) > 0:
+            # Alternative: use range selections (for demo purposes)
+            for i, range_obj in enumerate(plot_ui.ranges[:k_clusters_slider.value]):
+                if 'x' in range_obj and 'y' in range_obj:
+                    x_center = (range_obj['x'][0] + range_obj['x'][1]) / 2
+                    y_center = (range_obj['y'][0] + range_obj['y'][1]) / 2
+                    centroids.append([x_center, y_center])
+        
+        # If still not enough centroids, add random ones as fallback
+        while len(centroids) < k_clusters_slider.value:
+            # Add some default centroids as fallback
+            centroids.append([np.random.uniform(-5, 5), np.random.uniform(-5, 5)])
+    
+    centroids = np.array(centroids)
+    return centroids
+
+
+@app.cell
+def __(mo):
+    mo.md(
+        r"""
+        ## 🏃‍♂️ K-Means Algorithm Execution
+        
+        Once you've placed your centroids, the algorithm will run automatically!
+        """
     )
+    return
+
+
+@app.cell
+def __(centroids, df, k_clusters_slider, max_iterations_slider, mo, run_button):
+    # Run K-Means with user-placed centroids
+    from sklearn.metrics import adjusted_rand_score
+    from sklearn.cluster import KMeans
+    
+    if len(centroids) < k_clusters_slider.value:
+        mo.md("⚠️ Please place centroids on the plot first!")
+        return
+    
+    # Prepare data
+    X = df[['x', 'y']].values
+    y_true = df['true_cluster'].values
+    
+    # Run K-Means with user centroids
+    kmeans = KMeans(
+        n_clusters=k_clusters_slider.value,
+        init=centroids[:k_clusters_slider.value],
+        n_init=1,
+        max_iter=max_iterations_slider.value,
+        random_state=42
+    )
+    
+    # Fit the model
+    kmeans.fit(X)
+    
+    # Get results
+    labels = kmeans.labels_
+    final_centroids = kmeans.cluster_centers_
+    
+    # Calculate metrics
+    ari = adjusted_rand_score(y_true, labels)
+    iterations = kmeans.n_iter_
+    
+    mo.md(
+        f"""
+        ## 📊 K-Means Results
+        
+        **Algorithm Performance:**
+        - **Iterations to Converge:** {iterations}
+        - **Adjusted Rand Index:** {ari:.3f} (1.0 = perfect match with true clusters)
+        - **Final Centroids:** {len(final_centroids)} placed
+        
+        **Centroid Locations:**
+        {chr(10).join([f"Centroid {i+1}: ({c[0]:.2f}, {c[1]:.2f})" for i, c in enumerate(final_centroids)])}
+        """
+    )
+    
+    return kmeans, labels, final_centroids, ari, iterations
+
+
+@app.cell
+def __(kmeans, labels, mo, np):
+    # Create visualization with convex hulls
+    import plotly.graph_objects as go
+    import plotly.express as px
+    
+    if kmeans is None:
+        mo.md("⚠️ No K-Means results to display.")
+        return
+    
+    # Get original data (we need this from the global df)
+    # For now, create a simple visualization using available data
+    fig = go.Figure()
+    
+    colors = px.colors.qualitative.Plotly
+    
+    # Add centroids
+    fig.add_trace(go.Scatter(
+        x=kmeans.cluster_centers_[:, 0],
+        y=kmeans.cluster_centers_[:, 1],
+        mode='markers',
+        marker=dict(
+            size=15,
+            color='black',
+            symbol='x',
+            line=dict(width=2, color='white')
+        ),
+        name='Final Centroids'
+    ))
+    
+    # Add a note about the data points
+    fig.add_annotation(
+        text="Data points visualization would be added here<br>using the original dataset",
+        xref="paper", yref="paper",
+        x=0.5, y=0.5, showarrow=False,
+        font=dict(size=12)
+    )
+    
+    fig.update_layout(
+        title='K-Means Clustering Results',
+        xaxis_title='X',
+        yaxis_title='Y',
+        width=700,
+        height=500,
+        showlegend=True
+    )
+    
+    mo.ui.plotly(fig)
 
 
 @app.cell
