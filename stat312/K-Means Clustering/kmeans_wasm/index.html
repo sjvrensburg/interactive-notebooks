@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <link rel="icon" href="./favicon.ico" />
+    <!-- Preload is necessary because we show these images when we disconnect from the server,
+    but at that point we cannot load these images from the server -->
+    <link rel="preload" href="./assets/gradient-yHQUC_QB.png" as="image" />
+    <link rel="preload" href="./assets/noise-60BoTA8O.png" as="image" />
+    <!-- Preload the fonts -->
+    <link rel="preload" href="./assets/Lora-VariableFont_wght-B2ootaw-.ttf" as="font" crossorigin="anonymous" />
+    <link rel="preload" href="./assets/PTSans-Regular-CxL0S8W7.ttf" as="font" crossorigin="anonymous" />
+    <link rel="preload" href="./assets/PTSans-Bold-D9fedIX3.ttf" as="font" crossorigin="anonymous" />
+    <link rel="preload" href="./assets/FiraMono-Regular-BTCkDNvf.ttf" as="font" crossorigin="anonymous" />
+    <link rel="preload" href="./assets/FiraMono-Medium-DU3aDxX5.ttf" as="font" crossorigin="anonymous" />
+    <link rel="preload" href="./assets/FiraMono-Bold-CLVRCuM9.ttf" as="font" crossorigin="anonymous" />
+
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#000000" />
+    <meta name="description" content="a marimo app" />
+    <link rel="apple-touch-icon" href="./apple-touch-icon.png" />
+    <link rel="manifest" href="./manifest.json" />
+
+    <script data-marimo="true">
+      function __resizeIframe(obj) {
+        var scrollbarHeight = 20; // Max between windows, mac, and linux
+
+        function setHeight() {
+          // Guard against race condition where iframe isn't ready
+          if (!obj.contentWindow?.document?.documentElement) {
+            return;
+          }
+          var element = obj.contentWindow.document.documentElement;
+          // If there is no vertical scrollbar, we don't need to resize the iframe
+          if (element.scrollHeight === element.clientHeight) {
+            return;
+          }
+
+          // Create a new height that includes the scrollbar height if it's visible
+          var hasHorizontalScrollbar = element.scrollWidth > element.clientWidth;
+          var newHeight = element.scrollHeight + (hasHorizontalScrollbar ? scrollbarHeight : 0);
+
+          // Only update the height if it's different from the current height
+          if (obj.style.height !== `${newHeight}px`) {
+            obj.style.height = `${newHeight}px`;
+          }
+        }
+
+        // Resize the iframe to the height of the content and bottom scrollbar height
+        setHeight();
+
+        // Resize the iframe when the content changes
+        const resizeObserver = new ResizeObserver((entries) => {
+          setHeight();
+        });
+        // Only observe if iframe content is ready
+        if (obj.contentWindow?.document?.body) {
+          resizeObserver.observe(obj.contentWindow.document.body);
+        }
+      }
+    </script>
+    <marimo-filename hidden>notebook.py</marimo-filename>
+    <!-- TODO(Trevor): Legacy, required by VS Code plugin. Remove when plugin is updated (see marimo/server/_templates/template.py) -->
+    <marimo-version data-version="{{ version }}" hidden></marimo-version>
+    <marimo-user-config data-config="{{ user_config }}" hidden></marimo-user-config>
+    <marimo-server-token data-token="{{ server_token }}" hidden></marimo-server-token>
+    <!-- /TODO -->
+    <title>kmeans marimo</title>
+    <script type="module" crossorigin src="./assets/index-29P5xX8u.js"></script>
+    <link rel="modulepreload" crossorigin href="./assets/preload-helper-DImqtvgl.js">
+    <link rel="modulepreload" crossorigin href="./assets/chunk-DZLz74EQ.js">
+    <link rel="modulepreload" crossorigin href="./assets/react-BcIddLXZ.js">
+    <link rel="modulepreload" crossorigin href="./assets/jsx-runtime-DvsdsEjx.js">
+    <link rel="modulepreload" crossorigin href="./assets/useEventListener-g9rPKvBX.js">
+    <link rel="modulepreload" crossorigin href="./assets/dist-CLazWf1X.js">
+    <link rel="modulepreload" crossorigin href="./assets/react-dom-D6bRRS5R.js">
+    <link rel="modulepreload" crossorigin href="./assets/namespace-CnoeT75h.js">
+    <link rel="modulepreload" crossorigin href="./assets/tslib.es6-dlz5WbC8.js">
+    <link rel="modulepreload" crossorigin href="./assets/fullscreen-DTPr3iBY.js">
+    <link rel="modulepreload" crossorigin href="./assets/cn-Dr9kMPPj.js">
+    <link rel="modulepreload" crossorigin href="./assets/dist-D-dnh2ed.js">
+    <link rel="modulepreload" crossorigin href="./assets/menu-items-Bo6Dyd_Q.js">
+    <link rel="modulepreload" crossorigin href="./assets/createLucideIcon-QLW8E4z5.js">
+    <link rel="modulepreload" crossorigin href="./assets/check-C5PVLNkJ.js">
+    <link rel="modulepreload" crossorigin href="./assets/chevron-right-BDEhimQq.js">
+    <link rel="modulepreload" crossorigin href="./assets/dropdown-menu-CJDB1PNI.js">
+    <link rel="modulepreload" crossorigin href="./assets/events-BGfCi1Xy.js">
+    <link rel="modulepreload" crossorigin href="./assets/select-DKRTzlUU.js">
+    <link rel="modulepreload" crossorigin href="./assets/tooltip-ULHbIsj9.js">
+    <link rel="modulepreload" crossorigin href="./assets/Logger-BkkOJyg0.js">
+    <link rel="modulepreload" crossorigin href="./assets/hotkeys-CBY41Jr2.js">
+    <link rel="modulepreload" crossorigin href="./assets/react-7g8sREeT.js">
+    <link rel="modulepreload" crossorigin href="./assets/_Uint8Array-CPNtPV0k.js">
+    <link rel="modulepreload" crossorigin href="./assets/_getTag-C4fv2peH.js">
+    <link rel="modulepreload" crossorigin href="./assets/_baseIsEqual-Cdnsi4t8.js">
+    <link rel="modulepreload" crossorigin href="./assets/invariant-91cSKJcr.js">
+    <link rel="modulepreload" crossorigin href="./assets/isArrayLikeObject-CQy5-FN4.js">
+    <link rel="modulepreload" crossorigin href="./assets/merge-DrdmtLTL.js">
+    <link rel="modulepreload" crossorigin href="./assets/zod-BEi78Y5d.js">
+    <link rel="modulepreload" crossorigin href="./assets/utils-DBmmAf_K.js">
+    <link rel="modulepreload" crossorigin href="./assets/Deferred-Mppm0cvJ.js">
+    <link rel="modulepreload" crossorigin href="./assets/uuid-4lb_EYpq.js">
+    <link rel="modulepreload" crossorigin href="./assets/key-D4QiH_7H.js">
+    <link rel="modulepreload" crossorigin href="./assets/once-8ZDiGGtA.js">
+    <link rel="modulepreload" crossorigin href="./assets/toDate-Daj1hQSF.js">
+    <link rel="modulepreload" crossorigin href="./assets/_baseSlice-B27Cqkm6.js">
+    <link rel="modulepreload" crossorigin href="./assets/_arrayMap-DQI2GUNb.js">
+    <link rel="modulepreload" crossorigin href="./assets/isSymbol-D1Vf4s0g.js">
+    <link rel="modulepreload" crossorigin href="./assets/toString-pPvo2488.js">
+    <link rel="modulepreload" crossorigin href="./assets/_hasUnicode-CPHpt5EV.js">
+    <link rel="modulepreload" crossorigin href="./assets/upperFirst-CVedXayx.js">
+    <link rel="modulepreload" crossorigin href="./assets/capitalize-DcZ4F_0s.js">
+    <link rel="modulepreload" crossorigin href="./assets/ai-model-dropdown-DSUVFIso.js">
+    <link rel="modulepreload" crossorigin href="./assets/documentation-B7z6bB-t.js">
+    <link rel="modulepreload" crossorigin href="./assets/badge-DJuT6BaT.js">
+    <link rel="modulepreload" crossorigin href="./assets/button-Bxk0BtBn.js">
+    <link rel="modulepreload" crossorigin href="./assets/use-toast-D6NNsC80.js">
+    <link rel="modulepreload" crossorigin href="./assets/constants-Cv7-oioA.js">
+    <link rel="modulepreload" crossorigin href="./assets/config-DXGmIv9f.js">
+    <link rel="modulepreload" crossorigin href="./assets/connection-D2GvycR9.js">
+    <link rel="modulepreload" crossorigin href="./assets/useLifecycle-BfeAlD80.js">
+    <link rel="modulepreload" crossorigin href="./assets/useNonce-BbWkd3B4.js">
+    <link rel="modulepreload" crossorigin href="./assets/useTheme-oPMxEKRc.js">
+    <link rel="modulepreload" crossorigin href="./assets/createReducer-CFr1RdS2.js">
+    <link rel="modulepreload" crossorigin href="./assets/dist-CoL9j4yJ.js">
+    <link rel="modulepreload" crossorigin href="./assets/dist-Bz53xjA5.js">
+    <link rel="modulepreload" crossorigin href="./assets/dist-Cs8TISgf.js">
+    <link rel="modulepreload" crossorigin href="./assets/dist-Dlusp3mb.js">
+    <link rel="modulepreload" crossorigin href="./assets/dist-DzUKODTF.js">
+    <link rel="modulepreload" crossorigin href="./assets/dist-CjoeBoZ9.js">
+    <link rel="modulepreload" crossorigin href="./assets/dist-CyqTsfyg.js">
+    <link rel="modulepreload" crossorigin href="./assets/dist-Dm8m1boP.js">
+    <link rel="modulepreload" crossorigin href="./assets/dist-DvDyxv8b.js">
+    <link rel="modulepreload" crossorigin href="./assets/stex-BrOrfhKB.js">
+    <link rel="modulepreload" crossorigin href="./assets/_baseProperty-CIKnF2iY.js">
+    <link rel="modulepreload" crossorigin href="./assets/toNumber-Bjr00yqN.js">
+    <link rel="modulepreload" crossorigin href="./assets/now-CKgsywea.js">
+    <link rel="modulepreload" crossorigin href="./assets/debounce-Bzqd6azt.js">
+    <link rel="modulepreload" crossorigin href="./assets/toInteger-Qi6pclEF.js">
+    <link rel="modulepreload" crossorigin href="./assets/type-kF6pOJbH.js">
+    <link rel="modulepreload" crossorigin href="./assets/marked.esm-C_54K2ke.js">
+    <link rel="modulepreload" crossorigin href="./assets/main-CfqcqCNp.js">
+    <link rel="modulepreload" crossorigin href="./assets/cells-Dd1FatlG.js">
+    <link rel="modulepreload" crossorigin href="./assets/kbd-BQFiWIjd.js">
+    <link rel="modulepreload" crossorigin href="./assets/renderShortcut-C9_NT6sD.js">
+    <link rel="modulepreload" crossorigin href="./assets/useEvent-BOb1a9d1.js">
+    <link rel="modulepreload" crossorigin href="./assets/useDeleteCell-CJaipocw.js">
+    <link rel="modulepreload" crossorigin href="./assets/icons-CLD-J5J3.js">
+    <link rel="modulepreload" crossorigin href="./assets/spinner-BhnfQOEl.js">
+    <link rel="modulepreload" crossorigin href="./assets/add-missing-import-CfRgNApn.js">
+    <link rel="modulepreload" crossorigin href="./assets/ansi_up-D_b0GS7N.js">
+    <link rel="modulepreload" crossorigin href="./assets/blob-CTPcPiam.js">
+    <link rel="modulepreload" crossorigin href="./assets/dom-CT3dAMQW.js">
+    <link rel="modulepreload" crossorigin href="./assets/errors-_3XAtRr3.js">
+    <link rel="modulepreload" crossorigin href="./assets/extends-Bwhapo2B.js">
+    <link rel="modulepreload" crossorigin href="./assets/objectWithoutPropertiesLoose-CDpgRi8_.js">
+    <link rel="modulepreload" crossorigin href="./assets/esm-7XxuulnL.js">
+    <link rel="modulepreload" crossorigin href="./assets/es-BVCqnQhJ.js">
+    <link rel="modulepreload" crossorigin href="./assets/shim-CWt9rDBn.js">
+    <link rel="modulepreload" crossorigin href="./assets/add-cell-with-ai-CxM_YKzf.js">
+    <link rel="modulepreload" crossorigin href="./assets/ErrorBoundary-CeiDOU5x.js">
+    <link rel="modulepreload" crossorigin href="./assets/alert-dialog-BO8sf-73.js">
+    <link rel="modulepreload" crossorigin href="./assets/dialog-CR68_CUl.js">
+    <link rel="modulepreload" crossorigin href="./assets/useDebounce-_ztZiL0I.js">
+    <link rel="modulepreload" crossorigin href="./assets/useNumberFormatter-D21brJ0f.js">
+    <link rel="modulepreload" crossorigin href="./assets/input-C1RzjWSK.js">
+    <link rel="modulepreload" crossorigin href="./assets/ImperativeModal-BG5LTpV0.js">
+    <link rel="modulepreload" crossorigin href="./assets/filename-B5Yo1bOu.js">
+    <link rel="modulepreload" crossorigin href="./assets/cell-link-_kF38gGF.js">
+    <link rel="modulepreload" crossorigin href="./assets/accordion-A41ffd5P.js">
+    <link rel="modulepreload" crossorigin href="./assets/alert-hjKHAeOD.js">
+    <link rel="modulepreload" crossorigin href="./assets/links-CkROMZxn.js">
+    <link rel="modulepreload" crossorigin href="./assets/state-jvUYiWCG.js">
+    <link rel="modulepreload" crossorigin href="./assets/wrench-B2m2X1sb.js">
+    <link rel="modulepreload" crossorigin href="./assets/MarimoErrorOutput-Lft73Wnl.js">
+    <link rel="modulepreload" crossorigin href="./assets/copy-CkZsxeON.js">
+    <link rel="modulepreload" crossorigin href="./assets/copy-6mpL4BeI.js">
+    <link rel="modulepreload" crossorigin href="./assets/copy-icon-6ICckC-p.js">
+    <link rel="modulepreload" crossorigin href="./assets/RenderHTML-BoDLdBq-.js">
+    <link rel="modulepreload" crossorigin href="./assets/emotion-is-prop-valid.esm-BbphD4LX.js">
+    <link rel="modulepreload" crossorigin href="./assets/with-selector-BmLsipPw.js">
+    <link rel="modulepreload" crossorigin href="./assets/JsonOutput-BID8Oos7.js">
+    <link rel="modulepreload" crossorigin href="./assets/_arrayReduce-DDpPg0Qh.js">
+    <link rel="modulepreload" crossorigin href="./assets/startCase-D58-CT5H.js">
+    <link rel="modulepreload" crossorigin href="./assets/strings-DYBy5ejj.js">
+    <link rel="modulepreload" crossorigin href="./assets/command-BZVf1cJP.js">
+    <link rel="modulepreload" crossorigin href="./assets/popover-DW0D4l0O.js">
+    <link rel="modulepreload" crossorigin href="./assets/table-CE-j9Qo6.js">
+    <link rel="modulepreload" crossorigin href="./assets/tabs-8ThyQfYh.js">
+    <link rel="modulepreload" crossorigin href="./assets/useAsyncData-D9GA9BWg.js">
+    <link rel="modulepreload" crossorigin href="./assets/LazyAnyLanguageCodeMirror-RkzkO2YV.js">
+    <link rel="modulepreload" crossorigin href="./assets/error-banner-BGjnZePp.js">
+    <link rel="modulepreload" crossorigin href="./assets/defaultLocale-DPsgYaXf.js">
+    <link rel="modulepreload" crossorigin href="./assets/precisionRound-TxjBk8nN.js">
+    <link rel="modulepreload" crossorigin href="./assets/defaultLocale-C6TNIE_k.js">
+    <link rel="modulepreload" crossorigin href="./assets/vega-loader.browser.module-BkWiTok0.js">
+    <link rel="modulepreload" crossorigin href="./assets/loader-CgbiPC_T.js">
+    <link rel="modulepreload" crossorigin href="./assets/formats-CWdWXhfT.js">
+    <link rel="modulepreload" crossorigin href="./assets/en-US-CjWuOpsV.js">
+    <link rel="modulepreload" crossorigin href="./assets/isValid-o3nZVu8e.js">
+    <link rel="modulepreload" crossorigin href="./assets/dates-Au76svwW.js">
+    <link rel="modulepreload" crossorigin href="./assets/download-B4_BX7gi.js">
+    <link rel="modulepreload" crossorigin href="./assets/maps-DaQbs_UR.js">
+    <link rel="modulepreload" crossorigin href="./assets/useDateFormatter-DrFLqO1D.js">
+    <link rel="modulepreload" crossorigin href="./assets/range-Dsq9WHSI.js">
+    <link rel="modulepreload" crossorigin href="./assets/list-filter-CRC72QPW.js">
+    <link rel="modulepreload" crossorigin href="./assets/columns-qXe5bccO.js">
+    <link rel="modulepreload" crossorigin href="./assets/focus-Bnk25hTp.js">
+    <link rel="modulepreload" crossorigin href="./assets/useInstallPackage-DoKAq17E.js">
+    <link rel="modulepreload" crossorigin href="./assets/column-preview-2H8pwalb.js">
+    <link rel="modulepreload" crossorigin href="./assets/useAddCell-Dq3HqYz1.js">
+    <link rel="modulepreload" crossorigin href="./assets/toggle-BpFqu8FB.js">
+    <link rel="modulepreload" crossorigin href="./assets/useHotkey-DkiyGPLs.js">
+    <link rel="modulepreload" crossorigin href="./assets/globals-BFoVgbHf.js">
+    <link rel="modulepreload" crossorigin href="./assets/mode-DQPKc-Hp.js">
+    <link rel="modulepreload" crossorigin href="./assets/share-Dcl7D_tA.js">
+    <link rel="modulepreload" crossorigin href="./assets/dist-DcASoeRZ.js">
+    <link rel="modulepreload" crossorigin href="./assets/memoize-D2QB0zzX.js">
+    <link rel="modulepreload" crossorigin href="./assets/_toKey-BvVjBIlz.js">
+    <link rel="modulepreload" crossorigin href="./assets/_baseSet-B-t_O9-N.js">
+    <link rel="modulepreload" crossorigin href="./assets/utilities.esm-DcV_e-D3.js">
+    <link rel="modulepreload" crossorigin href="./assets/floating-outline-DZnSnZfg.js">
+    <link rel="modulepreload" crossorigin href="./assets/eye-off-9UMe_Y7D.js">
+    <link rel="modulepreload" crossorigin href="./assets/plus-d2HNOuZI.js">
+    <link rel="modulepreload" crossorigin href="./assets/readonly-python-code-Cb7Ak_Dy.js">
+    <link rel="modulepreload" crossorigin href="./assets/file-video-camera-CfnyBQQe.js">
+    <link rel="modulepreload" crossorigin href="./assets/file-text-Lr1kJd4E.js">
+    <link rel="modulepreload" crossorigin href="./assets/file-BENStGHx.js">
+    <link rel="modulepreload" crossorigin href="./assets/types-DyTIgBnH.js">
+    <link rel="modulepreload" crossorigin href="./assets/label-BEUjZsdo.js">
+    <link rel="modulepreload" crossorigin href="./assets/form-BGZvwlog.js">
+    <link rel="modulepreload" crossorigin href="./assets/textarea-B-_OthMe.js">
+    <link rel="modulepreload" crossorigin href="./assets/circle-x-BsVcxKkV.js">
+    <link rel="modulepreload" crossorigin href="./assets/refresh-ccw-CCJeTTJO.js">
+    <link rel="modulepreload" crossorigin href="./assets/trash-2-3UJSaMKF.js">
+    <link rel="modulepreload" crossorigin href="./assets/form-DyKYT1WR.js">
+    <link rel="modulepreload" crossorigin href="./assets/field-D6g5A_wf.js">
+    <link rel="modulepreload" crossorigin href="./assets/switch-B5bMMWJn.js">
+    <link rel="modulepreload" crossorigin href="./assets/useBoolean-CSR3XjhE.js">
+    <link rel="modulepreload" crossorigin href="./assets/useDeepCompareMemoize-BsZY8i2r.js">
+    <link rel="modulepreload" crossorigin href="./assets/types-DQDL7dro.js">
+    <link rel="modulepreload" crossorigin href="./assets/prop-types-CHKlDUlJ.js">
+    <link rel="modulepreload" crossorigin href="./assets/es-C-CWIA-E.js">
+    <link rel="modulepreload" crossorigin href="./assets/VisuallyHidden-BiHw-PIc.js">
+    <link rel="modulepreload" crossorigin href="./assets/_baseFlatten-BM8p5vhd.js">
+    <link rel="modulepreload" crossorigin href="./assets/get-Bi1nZ6vb.js">
+    <link rel="modulepreload" crossorigin href="./assets/hasIn-BZo8Xaqq.js">
+    <link rel="modulepreload" crossorigin href="./assets/_basePickBy-CViVNfOD.js">
+    <link rel="modulepreload" crossorigin href="./assets/pick-CHglt4eJ.js">
+    <link rel="modulepreload" crossorigin href="./assets/square-DKPXnMmD.js">
+    <link rel="modulepreload" crossorigin href="./assets/chart-no-axes-column-DmR44Tbq.js">
+    <link rel="modulepreload" crossorigin href="./assets/download-BB5Iexmn.js">
+    <link rel="modulepreload" crossorigin href="./assets/globe-CPrVx8HM.js">
+    <link rel="modulepreload" crossorigin href="./assets/send-DRRBOpzT.js">
+    <link rel="modulepreload" crossorigin href="./assets/refresh-cw-B_tmnHav.js">
+    <link rel="modulepreload" crossorigin href="./assets/settings-6ySBJQ7Y.js">
+    <link rel="modulepreload" crossorigin href="./assets/square-function-DBJINsmk.js">
+    <link rel="modulepreload" crossorigin href="./assets/bundle.esm-CSE5zS7V.js">
+    <link rel="stylesheet" crossorigin href="./assets/documentation-BvrC6Bsv.css">
+    <link rel="stylesheet" crossorigin href="./assets/columns-j3zW187k.css">
+    <link rel="stylesheet" crossorigin href="./assets/index-Optxbl37.css">
+  <marimo-wasm hidden=""></marimo-wasm>
+    <script>
+        if (window.location.protocol === 'file:') {
+            alert('Warning: This file must be served by an HTTP server to function correctly.');
+        }
+    </script>
+    
+    <style>
+        #save-button {
+            display: none !important;
+        }
+        #filename-input {
+            display: none !important;
+        }
+    </style>
+    <marimo-code hidden="">import%20marimo%0A%0A__generated_with%20%3D%20%220.16.5%22%0Aapp%20%3D%20marimo.App(width%3D%22medium%22)%0A%0A%0A%40app.cell%0Adef%20_()%3A%0A%20%20%20%20import%20marimo%20as%20mo%0A%20%20%20%20return%20(mo%2C)%0A%0A%0A%40app.cell%0Adef%20_(mo)%3A%0A%20%20%20%20mo.md(%0A%20%20%20%20%20%20%20%20r%22%22%22%0A%20%20%20%20%20%20%20%20%23%20K-Means%20Clustering%20Evolution%20Tutorial%0A%0A%20%20%20%20%20%20%20%20Watch%20the%20**step-by-step%20evolution**%20of%20the%20K-Means%20algorithm!%20This%20notebook%20demonstrates%3A%0A%0A%20%20%20%20%20%20%20%201.%20**Generate%20synthetic%20data**%20with%20configurable%20parameters%0A%20%20%20%20%20%20%20%202.%20**Run%20K-Means%20iteratively**%20with%20manual%20iteration%20capture%0A%20%20%20%20%20%20%20%203.%20**Step%20through%20iterations**%20with%20an%20interactive%20slider%0A%20%20%20%20%20%20%20%204.%20**Visualize%20cluster%20evolution**%20with%20convex%20hulls%20at%20each%20step%0A%0A%20%20%20%20%20%20%20%20%23%23%20What%20You'll%20See%0A%0A%20%20%20%20%20%20%20%20-%20**Random%20Initialization**%3A%20Initial%20random%20centroid%20placement%0A%20%20%20%20%20%20%20%20-%20**Assignment%20Step**%3A%20Points%20assigned%20to%20nearest%20centroids%0A%20%20%20%20%20%20%20%20-%20**Update%20Step**%3A%20Centroids%20moved%20to%20cluster%20means%0A%20%20%20%20%20%20%20%20-%20**Convergence**%3A%20When%20centroids%20stop%20changing%20significantly%0A%20%20%20%20%20%20%20%20-%20**Evolution**%3A%20How%20clusters%20grow%20and%20stabilize%20over%20iterations%0A%0A%20%20%20%20%20%20%20%20%23%23%23%20Algorithm%20Steps%20Visualized%3A%0A%0A%20%20%20%20%20%20%20%201.%20**Iteration%200**%3A%20Random%20initial%20centroids%0A%20%20%20%20%20%20%20%202.%20**Each%20Subsequent**%3A%20Assignment%20%E2%86%92%20Update%20%E2%86%92%20Check%20Convergence%0A%20%20%20%20%20%20%20%203.%20**Final**%3A%20Stable%20cluster%20configuration%0A%20%20%20%20%20%20%20%20%22%22%22%0A%20%20%20%20)%0A%20%20%20%20return%0A%0A%0A%40app.cell%0Adef%20_()%3A%0A%20%20%20%20%23%20Import%20all%20necessary%20libraries%0A%20%20%20%20import%20numpy%20as%20np%0A%20%20%20%20import%20pandas%20as%20pd%0A%20%20%20%20from%20sklearn.cluster%20import%20KMeans%0A%20%20%20%20from%20sklearn.datasets%20import%20make_blobs%0A%20%20%20%20from%20sklearn.metrics%20import%20pairwise_distances_argmin_min%2C%20adjusted_rand_score%0A%20%20%20%20import%20plotly.graph_objects%20as%20go%0A%20%20%20%20import%20plotly.express%20as%20px%0A%20%20%20%20from%20scipy.spatial%20import%20ConvexHull%0A%20%20%20%20return%20(%0A%20%20%20%20%20%20%20%20ConvexHull%2C%0A%20%20%20%20%20%20%20%20adjusted_rand_score%2C%0A%20%20%20%20%20%20%20%20go%2C%0A%20%20%20%20%20%20%20%20make_blobs%2C%0A%20%20%20%20%20%20%20%20np%2C%0A%20%20%20%20%20%20%20%20pairwise_distances_argmin_min%2C%0A%20%20%20%20%20%20%20%20pd%2C%0A%20%20%20%20%20%20%20%20px%2C%0A%20%20%20%20)%0A%0A%0A%40app.cell%0Adef%20_(mo)%3A%0A%20%20%20%20mo.md(r%22%22%22%23%23%20%F0%9F%8E%9B%EF%B8%8F%20Configuration%22%22%22)%0A%20%20%20%20return%0A%0A%0A%40app.cell%0Adef%20_(mo)%3A%0A%20%20%20%20%23%20UI%20controls%20for%20data%20generation%20and%20K-Means%0A%20%20%20%20n_true_clusters_slider%20%3D%20mo.ui.slider(%0A%20%20%20%20%20%20%20%20start%3D2%2C%20stop%3D8%2C%20step%3D1%2C%20value%3D3%2C%20label%3D%22True%20number%20of%20clusters%22%0A%20%20%20%20)%0A%0A%20%20%20%20n_samples_slider%20%3D%20mo.ui.slider(%0A%20%20%20%20%20%20%20%20start%3D50%2C%20stop%3D500%2C%20step%3D50%2C%20value%3D200%2C%20label%3D%22Number%20of%20data%20points%22%0A%20%20%20%20)%0A%0A%20%20%20%20cluster_std_slider%20%3D%20mo.ui.slider(%0A%20%20%20%20%20%20%20%20start%3D0.5%2C%20stop%3D3.0%2C%20step%3D0.1%2C%20value%3D1.2%2C%20label%3D%22Cluster%20separation%20(std)%22%0A%20%20%20%20)%0A%0A%20%20%20%20k_clusters_slider%20%3D%20mo.ui.slider(%0A%20%20%20%20%20%20%20%20start%3D2%2C%20stop%3D8%2C%20step%3D1%2C%20value%3D3%2C%20label%3D%22Number%20of%20clusters%20(k)%22%0A%20%20%20%20)%0A%0A%20%20%20%20max_iterations_slider%20%3D%20mo.ui.slider(%0A%20%20%20%20%20%20%20%20start%3D5%2C%20stop%3D30%2C%20step%3D1%2C%20value%3D15%2C%20label%3D%22Maximum%20iterations%22%0A%20%20%20%20)%0A%0A%20%20%20%20random_state_slider%20%3D%20mo.ui.slider(%0A%20%20%20%20%20%20%20%20start%3D0%2C%20stop%3D100%2C%20step%3D1%2C%20value%3D42%2C%20label%3D%22Random%20state%20(seed)%22%0A%20%20%20%20)%0A%0A%20%20%20%20mo.md(%0A%20%20%20%20%20%20%20%20f%22%22%22%0A%20%20%20%20%20%20%20%20**Data%20Generation%3A**%20%7Bn_true_clusters_slider%7D%20%7Bn_samples_slider%7D%20%7Bcluster_std_slider%7D%0A%0A%20%20%20%20%20%20%20%20**K-Means%20Algorithm%3A**%20%7Bk_clusters_slider%7D%20%7Bmax_iterations_slider%7D%20%7Brandom_state_slider%7D%0A%20%20%20%20%20%20%20%20%22%22%22%0A%20%20%20%20)%0A%20%20%20%20return%20(%0A%20%20%20%20%20%20%20%20cluster_std_slider%2C%0A%20%20%20%20%20%20%20%20k_clusters_slider%2C%0A%20%20%20%20%20%20%20%20max_iterations_slider%2C%0A%20%20%20%20%20%20%20%20n_samples_slider%2C%0A%20%20%20%20%20%20%20%20n_true_clusters_slider%2C%0A%20%20%20%20%20%20%20%20random_state_slider%2C%0A%20%20%20%20)%0A%0A%0A%40app.cell%0Adef%20_(%0A%20%20%20%20cluster_std_slider%2C%0A%20%20%20%20make_blobs%2C%0A%20%20%20%20n_samples_slider%2C%0A%20%20%20%20n_true_clusters_slider%2C%0A%20%20%20%20pd%2C%0A%20%20%20%20random_state_slider%2C%0A)%3A%0A%20%20%20%20%23%20Generate%20synthetic%20dataset%0A%20%20%20%20print(f%22%F0%9F%8E%B2%20Generating%20%7Bn_samples_slider.value%7D%20points%20with%20%7Bn_true_clusters_slider.value%7D%20true%20clusters%20(seed%3D%7Brandom_state_slider.value%7D)...%22)%0A%0A%20%20%20%20data_x%2C%20data_y%20%3D%20make_blobs(%0A%20%20%20%20%20%20%20%20n_samples%3Dn_samples_slider.value%2C%0A%20%20%20%20%20%20%20%20centers%3Dn_true_clusters_slider.value%2C%0A%20%20%20%20%20%20%20%20cluster_std%3Dcluster_std_slider.value%2C%0A%20%20%20%20%20%20%20%20center_box%3D(-10%2C%2010)%2C%0A%20%20%20%20%20%20%20%20random_state%3Drandom_state_slider.value%0A%20%20%20%20)%0A%0A%20%20%20%20%23%20Create%20DataFrame%0A%20%20%20%20df%20%3D%20pd.DataFrame(data_x%2C%20columns%3D%5B'x'%2C%20'y'%5D)%0A%20%20%20%20df%5B'true_cluster'%5D%20%3D%20data_y%0A%0A%20%20%20%20print(f%22%E2%9C%85%20Data%20generated%3A%20shape%3D%7Bdata_x.shape%7D%22)%0A%20%20%20%20return%20(df%2C)%0A%0A%0A%40app.cell%0Adef%20_(%0A%20%20%20%20adjusted_rand_score%2C%0A%20%20%20%20df%2C%0A%20%20%20%20k_clusters_slider%2C%0A%20%20%20%20max_iterations_slider%2C%0A%20%20%20%20np%2C%0A%20%20%20%20pairwise_distances_argmin_min%2C%0A%20%20%20%20random_state_slider%2C%0A)%3A%0A%20%20%20%20%23%20Run%20K-Means%20evolution%0A%20%20%20%20print(f%22%5Cn%F0%9F%8E%AC%20Running%20K-Means%20with%20k%3D%7Bk_clusters_slider.value%7D%2C%20max_iter%3D%7Bmax_iterations_slider.value%7D%2C%20seed%3D%7Brandom_state_slider.value%7D...%22)%0A%0A%20%20%20%20%23%20Prepare%20data%0A%20%20%20%20X_data%20%3D%20df%5B%5B'x'%2C%20'y'%5D%5D.values%0A%20%20%20%20y_true%20%3D%20df%5B'true_cluster'%5D.values%0A%0A%20%20%20%20%23%20Manual%20K-Means%20evolution%20to%20capture%20each%20iteration%0A%20%20%20%20rng%20%3D%20np.random.default_rng(random_state_slider.value)%0A%20%20%20%20current_centroids%20%3D%20X_data%5Brng.choice(X_data.shape%5B0%5D%2C%20k_clusters_slider.value%2C%20replace%3DFalse)%5D%0A%0A%20%20%20%20print(f%22%F0%9F%8E%AF%20Initial%20centroids%20selected%20from%20data%20points%22)%0A%0A%20%20%20%20%23%20Store%20initial%20state%0A%20%20%20%20iteration_data%20%3D%20%7B%0A%20%20%20%20%20%20%20%20'iteration'%3A%200%2C%0A%20%20%20%20%20%20%20%20'centroids'%3A%20current_centroids.copy()%2C%0A%20%20%20%20%20%20%20%20'labels'%3A%20pairwise_distances_argmin_min(X_data%2C%20current_centroids)%5B0%5D%2C%0A%20%20%20%20%20%20%20%20'ari'%3A%20adjusted_rand_score(y_true%2C%20pairwise_distances_argmin_min(X_data%2C%20current_centroids)%5B0%5D)%0A%20%20%20%20%7D%0A%20%20%20%20iteration_history%20%3D%20%5Biteration_data%5D%0A%0A%20%20%20%20print(f%22%F0%9F%93%8A%20Iteration%200%3A%20ARI%20%3D%20%7Biteration_data%5B'ari'%5D%3A.3f%7D%22)%0A%0A%20%20%20%20%23%20Manual%20K-Means%20iterations%0A%20%20%20%20actual_iterations%20%3D%200%0A%20%20%20%20for%20i%20in%20range(max_iterations_slider.value)%3A%0A%20%20%20%20%20%20%20%20%23%20Assignment%20step%0A%20%20%20%20%20%20%20%20old_labels%20%3D%20pairwise_distances_argmin_min(X_data%2C%20current_centroids)%5B0%5D%0A%0A%20%20%20%20%20%20%20%20%23%20Update%20step%20-%20calculate%20new%20centroids%0A%20%20%20%20%20%20%20%20new_centroids%20%3D%20np.zeros_like(current_centroids)%0A%20%20%20%20%20%20%20%20for%20j%20in%20range(k_clusters_slider.value)%3A%0A%20%20%20%20%20%20%20%20%20%20%20%20cluster_points%20%3D%20X_data%5Bold_labels%20%3D%3D%20j%5D%0A%20%20%20%20%20%20%20%20%20%20%20%20if%20len(cluster_points)%20%3E%200%3A%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20new_centroids%5Bj%5D%20%3D%20cluster_points.mean(axis%3D0)%0A%20%20%20%20%20%20%20%20%20%20%20%20else%3A%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20new_centroids%5Bj%5D%20%3D%20current_centroids%5Bj%5D%0A%0A%20%20%20%20%20%20%20%20%23%20Check%20for%20convergence%0A%20%20%20%20%20%20%20%20if%20np.allclose(current_centroids%2C%20new_centroids%2C%20atol%3D1e-4)%3A%0A%20%20%20%20%20%20%20%20%20%20%20%20actual_iterations%20%3D%20i%20%2B%201%0A%20%20%20%20%20%20%20%20%20%20%20%20print(f%22%E2%9C%A8%20Converged%20at%20iteration%20%7Bactual_iterations%7D%22)%0A%20%20%20%20%20%20%20%20%20%20%20%20break%0A%0A%20%20%20%20%20%20%20%20current_centroids%20%3D%20new_centroids%0A%20%20%20%20%20%20%20%20current_labels%20%3D%20pairwise_distances_argmin_min(X_data%2C%20current_centroids)%5B0%5D%0A%0A%20%20%20%20%20%20%20%20%23%20Store%20this%20iteration%0A%20%20%20%20%20%20%20%20iteration_data%20%3D%20%7B%0A%20%20%20%20%20%20%20%20%20%20%20%20'iteration'%3A%20i%20%2B%201%2C%0A%20%20%20%20%20%20%20%20%20%20%20%20'centroids'%3A%20current_centroids.copy()%2C%0A%20%20%20%20%20%20%20%20%20%20%20%20'labels'%3A%20current_labels.copy()%2C%0A%20%20%20%20%20%20%20%20%20%20%20%20'ari'%3A%20adjusted_rand_score(y_true%2C%20current_labels)%0A%20%20%20%20%20%20%20%20%7D%0A%20%20%20%20%20%20%20%20iteration_history.append(iteration_data)%0A%0A%20%20%20%20%20%20%20%20if%20(i%20%2B%201)%20%25%205%20%3D%3D%200%3A%0A%20%20%20%20%20%20%20%20%20%20%20%20print(f%22%F0%9F%93%8A%20Iteration%20%7Bi%20%2B%201%7D%3A%20ARI%20%3D%20%7Biteration_data%5B'ari'%5D%3A.3f%7D%22)%0A%20%20%20%20else%3A%0A%20%20%20%20%20%20%20%20actual_iterations%20%3D%20max_iterations_slider.value%0A%20%20%20%20%20%20%20%20print(f%22%E2%9A%A0%EF%B8%8F%20%20Reached%20maximum%20iterations%20(%7Bactual_iterations%7D)%22)%0A%0A%20%20%20%20final_ari%20%3D%20iteration_history%5B-1%5D%5B'ari'%5D%0A%0A%20%20%20%20print(f%22%F0%9F%8F%81%20Final%20ARI%3A%20%7Bfinal_ari%3A.3f%7D%20(%7Blen(iteration_history)%7D%20total%20iterations%20captured)%22)%0A%20%20%20%20return%20X_data%2C%20actual_iterations%2C%20final_ari%2C%20iteration_history%0A%0A%0A%40app.cell%0Adef%20_(actual_iterations%2C%20final_ari%2C%20iteration_history%2C%20mo)%3A%0A%20%20%20%20%23%20Create%20iteration%20slider%0A%20%20%20%20iteration_slider%20%3D%20mo.ui.slider(%0A%20%20%20%20%20%20%20%200%2C%0A%20%20%20%20%20%20%20%20len(iteration_history)%20-%201%2C%0A%20%20%20%20%20%20%20%20value%3Dlen(iteration_history)%20-%201%2C%0A%20%20%20%20%20%20%20%20label%3D%22Iteration%22%2C%0A%20%20%20%20%20%20%20%20show_value%3DTrue%0A%20%20%20%20)%0A%0A%20%20%20%20mo.md(%0A%20%20%20%20%20%20%20%20f%22%22%22%0A%20%20%20%20%20%20%20%20%23%23%20%F0%9F%93%8A%20K-Means%20Evolution%20Results%0A%0A%20%20%20%20%20%20%20%20**Performance%3A**%20Total%20Iterations%3A%20%7Bactual_iterations%7D%20%7C%20Final%20ARI%3A%20%7Bfinal_ari%3A.3f%7D%20(1.0%20%3D%20perfect)%0A%0A%20%20%20%20%20%20%20%20**Evolution%20Viewer%3A**%20%7Biteration_slider%7D%0A%20%20%20%20%20%20%20%20%22%22%22%0A%20%20%20%20)%0A%20%20%20%20return%20(iteration_slider%2C)%0A%0A%0A%40app.cell%0Adef%20_(ConvexHull%2C%20X_data%2C%20go%2C%20iteration_history%2C%20iteration_slider%2C%20np%2C%20px)%3A%0A%20%20%20%20%23%20Create%20visualization%20for%20selected%20iteration%0A%20%20%20%20print(f%22%5Cn%F0%9F%8E%A8%20Rendering%20iteration%20%7Biteration_slider.value%7D...%22)%0A%0A%20%20%20%20%23%20Get%20selected%20iteration%20data%0A%20%20%20%20selected_iter%20%3D%20iteration_slider.value%0A%20%20%20%20iter_data%20%3D%20iteration_history%5Bselected_iter%5D%0A%0A%20%20%20%20%23%20Create%20figure%0A%20%20%20%20evolution_fig%20%3D%20go.Figure()%0A%0A%20%20%20%20%23%20Define%20colors%20for%20each%20cluster%0A%20%20%20%20cluster_colors%20%3D%20%5B'red'%2C%20'blue'%2C%20'green'%2C%20'orange'%2C%20'purple'%2C%20'cyan'%2C%20'magenta'%2C%20'brown'%5D%0A%0A%20%20%20%20%23%20Add%20convex%20hulls%20for%20each%20cluster%20in%20this%20iteration%0A%20%20%20%20hull_count%20%3D%200%0A%20%20%20%20for%20cluster_idx%20in%20np.unique(iter_data%5B'labels'%5D)%3A%0A%20%20%20%20%20%20%20%20%23%20Get%20points%20for%20this%20cluster%0A%20%20%20%20%20%20%20%20cluster_pts%20%3D%20X_data%5Biter_data%5B'labels'%5D%20%3D%3D%20cluster_idx%5D%0A%0A%20%20%20%20%20%20%20%20%23%20Only%20add%20hull%20if%20we%20have%20enough%20points%0A%20%20%20%20%20%20%20%20if%20len(cluster_pts)%20%3E%3D%203%3A%0A%20%20%20%20%20%20%20%20%20%20%20%20try%3A%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%23%20Calculate%20convex%20hull%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20cluster_hull%20%3D%20ConvexHull(cluster_pts)%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20hull_pts%20%3D%20cluster_pts%5Bcluster_hull.vertices%5D%0A%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%23%20Close%20the%20polygon%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20hull_pts_closed%20%3D%20np.vstack(%5Bhull_pts%2C%20hull_pts%5B0%5D%5D)%0A%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%23%20Convert%20color%20to%20RGB%20for%20fillcolor%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20fill_color_hex%20%3D%20px.colors.qualitative.Plotly%5Bcluster_idx%20%25%20len(px.colors.qualitative.Plotly)%5D%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20fill_color_rgb%20%3D%20px.colors.hex_to_rgb(fill_color_hex)%0A%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%23%20Add%20hull%20trace%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20evolution_fig.add_trace(go.Scatter(%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20x%3Dhull_pts_closed%5B%3A%2C%200%5D%2C%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20y%3Dhull_pts_closed%5B%3A%2C%201%5D%2C%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20mode%3D'lines'%2C%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20fill%3D'toself'%2C%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20fillcolor%3Df'rgba(%7Bfill_color_rgb%5B0%5D%7D%2C%20%7Bfill_color_rgb%5B1%5D%7D%2C%20%7Bfill_color_rgb%5B2%5D%7D%2C%200.2)'%2C%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20line%3Ddict(color%3Dcluster_colors%5Bcluster_idx%20%25%20len(cluster_colors)%5D%2C%20width%3D2)%2C%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20name%3Df'Cluster%20%7Bcluster_idx%7D'%2C%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20showlegend%3DFalse%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20))%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20hull_count%20%2B%3D%201%0A%20%20%20%20%20%20%20%20%20%20%20%20except%20Exception%20as%20e%3A%0A%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20%20print(f%22%E2%9A%A0%EF%B8%8F%20%20Could%20not%20create%20hull%20for%20cluster%20%7Bcluster_idx%7D%3A%20%7Be%7D%22)%0A%0A%20%20%20%20print(f%22%E2%9C%85%20Created%20%7Bhull_count%7D%20convex%20hulls%22)%0A%0A%20%20%20%20%23%20Add%20data%20points%20colored%20by%20cluster%0A%20%20%20%20evolution_fig.add_trace(go.Scatter(%0A%20%20%20%20%20%20%20%20x%3DX_data%5B%3A%2C%200%5D%2C%0A%20%20%20%20%20%20%20%20y%3DX_data%5B%3A%2C%201%5D%2C%0A%20%20%20%20%20%20%20%20mode%3D'markers'%2C%0A%20%20%20%20%20%20%20%20marker%3Ddict(%0A%20%20%20%20%20%20%20%20%20%20%20%20size%3D8%2C%0A%20%20%20%20%20%20%20%20%20%20%20%20color%3D%5Bcluster_colors%5Bi%20%25%20len(cluster_colors)%5D%20for%20i%20in%20iter_data%5B'labels'%5D%5D%2C%0A%20%20%20%20%20%20%20%20%20%20%20%20opacity%3D0.8%0A%20%20%20%20%20%20%20%20)%2C%0A%20%20%20%20%20%20%20%20name%3D'Data%20Points'%0A%20%20%20%20))%0A%0A%20%20%20%20%23%20Add%20centroids%20for%20this%20iteration%0A%20%20%20%20evolution_fig.add_trace(go.Scatter(%0A%20%20%20%20%20%20%20%20x%3Diter_data%5B'centroids'%5D%5B%3A%2C%200%5D%2C%0A%20%20%20%20%20%20%20%20y%3Diter_data%5B'centroids'%5D%5B%3A%2C%201%5D%2C%0A%20%20%20%20%20%20%20%20mode%3D'markers'%2C%0A%20%20%20%20%20%20%20%20marker%3Ddict(%0A%20%20%20%20%20%20%20%20%20%20%20%20size%3D20%2C%0A%20%20%20%20%20%20%20%20%20%20%20%20color%3D'black'%2C%0A%20%20%20%20%20%20%20%20%20%20%20%20symbol%3D'x'%2C%0A%20%20%20%20%20%20%20%20%20%20%20%20line%3Ddict(width%3D3%2C%20color%3D'white')%0A%20%20%20%20%20%20%20%20)%2C%0A%20%20%20%20%20%20%20%20name%3D'Centroids'%0A%20%20%20%20))%0A%0A%20%20%20%20%23%20Add%20iteration%20information%20in%20bottom-right%20corner%0A%20%20%20%20evolution_fig.add_annotation(%0A%20%20%20%20%20%20%20%20text%3Df%22%3Cb%3EIteration%20%7Bselected_iter%7D%3C%2Fb%3E%3Cbr%3EARI%3A%20%7Biter_data%5B'ari'%5D%3A.3f%7D%22%2C%0A%20%20%20%20%20%20%20%20xref%3D%22paper%22%2C%20yref%3D%22paper%22%2C%0A%20%20%20%20%20%20%20%20x%3D0.98%2C%20y%3D0.02%2C%20showarrow%3DFalse%2C%0A%20%20%20%20%20%20%20%20xanchor%3D%22right%22%2C%20yanchor%3D%22bottom%22%2C%0A%20%20%20%20%20%20%20%20bgcolor%3D%22rgba(255%2C255%2C255%2C0.9)%22%2C%0A%20%20%20%20%20%20%20%20bordercolor%3D%22black%22%2C%0A%20%20%20%20%20%20%20%20borderwidth%3D1%2C%0A%20%20%20%20%20%20%20%20font%3Ddict(size%3D12)%0A%20%20%20%20)%0A%0A%20%20%20%20evolution_fig.update_layout(%0A%20%20%20%20%20%20%20%20title%3Df'K-Means%20Evolution%20-%20Iteration%20%7Bselected_iter%7D'%2C%0A%20%20%20%20%20%20%20%20xaxis_title%3D'X'%2C%0A%20%20%20%20%20%20%20%20yaxis_title%3D'Y'%2C%0A%20%20%20%20%20%20%20%20width%3D800%2C%0A%20%20%20%20%20%20%20%20height%3D600%2C%0A%20%20%20%20%20%20%20%20showlegend%3DTrue%2C%0A%20%20%20%20%20%20%20%20legend%3Ddict(%0A%20%20%20%20%20%20%20%20%20%20%20%20yanchor%3D%22top%22%2C%0A%20%20%20%20%20%20%20%20%20%20%20%20y%3D0.99%2C%0A%20%20%20%20%20%20%20%20%20%20%20%20xanchor%3D%22left%22%2C%0A%20%20%20%20%20%20%20%20%20%20%20%20x%3D0.01%2C%0A%20%20%20%20%20%20%20%20%20%20%20%20bgcolor%3D%22rgba(255%2C255%2C255%2C0.8)%22%2C%0A%20%20%20%20%20%20%20%20%20%20%20%20bordercolor%3D%22black%22%2C%0A%20%20%20%20%20%20%20%20%20%20%20%20borderwidth%3D1%2C%0A%20%20%20%20%20%20%20%20%20%20%20%20font%3Ddict(size%3D10)%0A%20%20%20%20%20%20%20%20)%0A%20%20%20%20)%0A%0A%20%20%20%20print(f%22%E2%9C%85%20Plot%20created%20successfully%20with%20%7Blen(X_data)%7D%20points%22)%0A%0A%20%20%20%20evolution_fig%0A%20%20%20%20return%0A%0A%0Aif%20__name__%20%3D%3D%20%22__main__%22%3A%0A%20%20%20%20app.run()%0A</marimo-code></head>
+  <body>
+    <div id="root"></div>
+    <!-- This is a portal for the data editor to render in -->
+    <div id="portal" data-testid="glide-portal" style="position: fixed; left: 0; top: 0; z-index: 9999"></div>
+    <script data-marimo="true">
+      window.__MARIMO_MOUNT_CONFIG__ = {
+            "filename": "notebook.py",
+            "mode": "read",
+            "version": "0.16.5",
+            "serverToken": "unused",
+            "config": {"ai": {"models": {"custom_models": [], "displayed_models": []}}, "completion": {"activate_on_typing": true, "copilot": false}, "display": {"cell_output": "below", "code_editor_font_size": 14, "dataframes": "rich", "default_table_max_columns": 50, "default_table_page_size": 10, "default_width": "medium", "reference_highlighting": false, "theme": "light"}, "formatting": {"line_length": 79}, "keymap": {"overrides": {}, "preset": "default"}, "language_servers": {"pylsp": {"enable_flake8": false, "enable_mypy": true, "enable_pydocstyle": false, "enable_pyflakes": false, "enable_pylint": false, "enable_ruff": true, "enabled": true}}, "mcp": {"mcpServers": {}, "presets": []}, "package_management": {"manager": "pip"}, "runtime": {"auto_instantiate": true, "auto_reload": "off", "default_sql_output": "auto", "on_cell_change": "autorun", "output_max_bytes": 8000000, "reactive_tests": true, "std_stream_max_bytes": 1000000, "watcher_on_save": "lazy"}, "save": {"autosave": "off", "autosave_delay": 1000, "format_on_save": false}, "server": {"browser": "default", "follow_symlink": false}, "snippets": {"custom_paths": [], "include_default_snippets": true}},
+            "configOverrides": {},
+            "appConfig": {"sql_output": "auto", "width": "medium"},
+            "view": {"showAppCode": true},
+            "notebook": null,
+            "session": null,
+            "runtimeConfig": null,
+        };
+    </script>
+  </body>
+</html>
