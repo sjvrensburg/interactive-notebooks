@@ -149,7 +149,7 @@ def __(df, go, k_clusters_slider, max_iterations_slider, mo):
             marker=dict(
                 size=8,
                 color=df_data['true_cluster'],
-                colorscale='Plotly',
+                colorscale='Viridis',
                 showscale=False
             ),
             name='Data Points',
@@ -208,9 +208,8 @@ def __(df, go, k_clusters_slider, max_iterations_slider, mo):
 
 
 @app.cell
-def __(clear_button, plot_ui, k_clusters_slider):
+def __(clear_button, plot_ui, k_clusters_slider, np):
     # State management for centroids
-    import numpy as np
     
     # Initialize empty centroids array
     if hasattr(clear_button, 'value') and clear_button.value is None:
@@ -253,41 +252,44 @@ def __(mo):
 
 
 @app.cell
-def __(centroids, df, k_clusters_slider, max_iterations_slider, mo, run_button):
+def __(centroids, df, k_clusters_slider, max_iterations_slider, mo, run_button, KMeans, adjusted_rand_score):
     # Run K-Means with user-placed centroids
-    from sklearn.metrics import adjusted_rand_score
-    from sklearn.cluster import KMeans
+    
+    # Prepare results
+    kmeans = None
+    labels = []
+    final_centroids = []
+    ari = 0
+    iterations = 0
     
     if len(centroids) < k_clusters_slider.value:
-        mo.md("⚠️ Please place centroids on the plot first!")
-        return
-    
-    # Prepare data
-    X = df[['x', 'y']].values
-    y_true = df['true_cluster'].values
-    
-    # Run K-Means with user centroids
-    kmeans = KMeans(
-        n_clusters=k_clusters_slider.value,
-        init=centroids[:k_clusters_slider.value],
-        n_init=1,
-        max_iter=max_iterations_slider.value,
-        random_state=42
-    )
-    
-    # Fit the model
-    kmeans.fit(X)
-    
-    # Get results
-    labels = kmeans.labels_
-    final_centroids = kmeans.cluster_centers_
-    
-    # Calculate metrics
-    ari = adjusted_rand_score(y_true, labels)
-    iterations = kmeans.n_iter_
-    
-    mo.md(
-        f"""
+        status_md = "⚠️ Please place centroids on the plot first!"
+    else:
+        # Prepare data
+        _X = df[['x', 'y']].values
+        y_true = df['true_cluster'].values
+        
+        # Run K-Means with user centroids
+        kmeans = KMeans(
+            n_clusters=k_clusters_slider.value,
+            init=centroids[:k_clusters_slider.value],
+            n_init=1,
+            max_iter=max_iterations_slider.value,
+            random_state=42
+        )
+        
+        # Fit the model
+        kmeans.fit(_X)
+        
+        # Get results
+        labels = kmeans.labels_
+        final_centroids = kmeans.cluster_centers_
+        
+        # Calculate metrics
+        ari = adjusted_rand_score(y_true, labels)
+        iterations = kmeans.n_iter_
+        
+        status_md = f"""
         ## 📊 K-Means Results
         
         **Algorithm Performance:**
@@ -298,59 +300,68 @@ def __(centroids, df, k_clusters_slider, max_iterations_slider, mo, run_button):
         **Centroid Locations:**
         {chr(10).join([f"Centroid {i+1}: ({c[0]:.2f}, {c[1]:.2f})" for i, c in enumerate(final_centroids)])}
         """
-    )
     
-    return kmeans, labels, final_centroids, ari, iterations
+    return status_md, kmeans, labels, final_centroids, ari, iterations
 
 
 @app.cell
-def __(kmeans, labels, mo, np):
+def __(status_md, mo):
+    # Display the K-Means results
+    mo.md(status_md)
+    return
+
+
+@app.cell
+def __(kmeans, labels, df, mo, np, px, go):
     # Create visualization with convex hulls
-    import plotly.graph_objects as go
-    import plotly.express as px
     
     if kmeans is None:
-        mo.md("⚠️ No K-Means results to display.")
-        return
+        viz_md = mo.md("⚠️ No K-Means results to display.")
+    else:
+        # Get original data
+        X = df[['x', 'y']].values
+        fig = go.Figure()
+        
+        # Add data points colored by cluster
+        fig.add_trace(go.Scatter(
+            x=X[:, 0],
+            y=X[:, 1],
+            mode='markers',
+            marker=dict(
+                size=8,
+                color=labels,
+                colorscale='Viridis',
+                showscale=False
+            ),
+            name='Clustered Data'
+        ))
+        
+        # Add centroids
+        fig.add_trace(go.Scatter(
+            x=kmeans.cluster_centers_[:, 0],
+            y=kmeans.cluster_centers_[:, 1],
+            mode='markers',
+            marker=dict(
+                size=15,
+                color='black',
+                symbol='x',
+                line=dict(width=2, color='white')
+            ),
+            name='Final Centroids'
+        ))
+        
+        fig.update_layout(
+            title='K-Means Clustering Results',
+            xaxis_title='X',
+            yaxis_title='Y',
+            width=700,
+            height=500,
+            showlegend=True
+        )
+        
+        viz_md = mo.ui.plotly(fig)
     
-    # Get original data (we need this from the global df)
-    # For now, create a simple visualization using available data
-    fig = go.Figure()
-    
-    colors = px.colors.qualitative.Plotly
-    
-    # Add centroids
-    fig.add_trace(go.Scatter(
-        x=kmeans.cluster_centers_[:, 0],
-        y=kmeans.cluster_centers_[:, 1],
-        mode='markers',
-        marker=dict(
-            size=15,
-            color='black',
-            symbol='x',
-            line=dict(width=2, color='white')
-        ),
-        name='Final Centroids'
-    ))
-    
-    # Add a note about the data points
-    fig.add_annotation(
-        text="Data points visualization would be added here<br>using the original dataset",
-        xref="paper", yref="paper",
-        x=0.5, y=0.5, showarrow=False,
-        font=dict(size=12)
-    )
-    
-    fig.update_layout(
-        title='K-Means Clustering Results',
-        xaxis_title='X',
-        yaxis_title='Y',
-        width=700,
-        height=500,
-        showlegend=True
-    )
-    
-    mo.ui.plotly(fig)
+    return viz_md
 
 
 @app.cell
