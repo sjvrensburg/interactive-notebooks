@@ -2,6 +2,8 @@
 
 **Interactive demonstration of the K-Means clustering algorithm** - Watch clusters form and evolve step by step!
 
+🌐 **[Live Demo](https://sjvrensburg.github.io/interactive-notebooks/stat312/K-Means%20Clustering/kmeans_wasm/)** - Run the notebook directly in your browser!
+
 ## 🎯 What You'll Learn
 
 This interactive tutorial demonstrates the **K-Means clustering algorithm** through visual, step-by-step evolution:
