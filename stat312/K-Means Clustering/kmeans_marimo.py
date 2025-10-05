@@ -68,13 +68,13 @@ def __():
 
 @app.cell
 def __(mo):
-    mo.md(r"""## 🎛️ Data Generation Controls""")
+    mo.md(r"""## 🎛️ Configuration""")
     return
 
 
 @app.cell
 def __(mo):
-    # UI controls for data generation
+    # UI controls for data generation and K-Means
     n_true_clusters_slider = mo.ui.slider(
         start=2, stop=8, step=1, value=3, label="True number of clusters"
     )
@@ -87,31 +87,39 @@ def __(mo):
         start=0.5, stop=3.0, step=0.1, value=1.2, label="Cluster separation (std)"
     )
 
+    k_clusters_slider = mo.ui.slider(
+        start=2, stop=8, step=1, value=3, label="Number of clusters (k)"
+    )
+
+    max_iterations_slider = mo.ui.slider(
+        start=5, stop=30, step=1, value=15, label="Maximum iterations"
+    )
+
+    random_state_slider = mo.ui.slider(
+        start=0, stop=100, step=1, value=42, label="Random state (seed)"
+    )
+
     mo.md(
         f"""
-        **Generate data:**
+        **Data Generation:** {n_true_clusters_slider} {n_samples_slider} {cluster_std_slider}
 
-        {n_true_clusters_slider}
-
-        {n_samples_slider}
-
-        {cluster_std_slider}
+        **K-Means Algorithm:** {k_clusters_slider} {max_iterations_slider} {random_state_slider}
         """
     )
-    return n_true_clusters_slider, n_samples_slider, cluster_std_slider
+    return n_true_clusters_slider, n_samples_slider, cluster_std_slider, k_clusters_slider, max_iterations_slider, random_state_slider
 
 
 @app.cell
-def __(make_blobs, n_samples_slider, n_true_clusters_slider, cluster_std_slider, pd):
+def __(make_blobs, n_samples_slider, n_true_clusters_slider, cluster_std_slider, random_state_slider, pd):
     # Generate synthetic dataset
-    print(f"🎲 Generating {n_samples_slider.value} points with {n_true_clusters_slider.value} true clusters...")
+    print(f"🎲 Generating {n_samples_slider.value} points with {n_true_clusters_slider.value} true clusters (seed={random_state_slider.value})...")
 
     data_x, data_y = make_blobs(
         n_samples=n_samples_slider.value,
         centers=n_true_clusters_slider.value,
         cluster_std=cluster_std_slider.value,
         center_box=(-10, 10),
-        random_state=42
+        random_state=random_state_slider.value
     )
 
     # Create DataFrame
@@ -124,51 +132,16 @@ def __(make_blobs, n_samples_slider, n_true_clusters_slider, cluster_std_slider,
 
 
 @app.cell
-def __(mo):
-    mo.md(
-        r"""
-        ## 🚀 K-Means Configuration
-
-        Configure the algorithm parameters below:
-        """
-    )
-    return
-
-
-@app.cell
-def __(mo):
-    # K-Means configuration
-    k_clusters_slider = mo.ui.slider(
-        start=2, stop=8, step=1, value=3, label="Number of clusters (k)"
-    )
-
-    max_iterations_slider = mo.ui.slider(
-        start=5, stop=30, step=1, value=15, label="Maximum iterations"
-    )
-
-    mo.md(
-        f"""
-        **Configuration:**
-
-        {k_clusters_slider}
-
-        {max_iterations_slider}
-        """
-    )
-    return k_clusters_slider, max_iterations_slider
-
-
-@app.cell
-def __(k_clusters_slider, max_iterations_slider, df, np, pairwise_distances_argmin_min, adjusted_rand_score):
+def __(k_clusters_slider, max_iterations_slider, random_state_slider, df, np, pairwise_distances_argmin_min, adjusted_rand_score):
     # Run K-Means evolution
-    print(f"\n🎬 Running K-Means with k={k_clusters_slider.value}, max_iter={max_iterations_slider.value}...")
+    print(f"\n🎬 Running K-Means with k={k_clusters_slider.value}, max_iter={max_iterations_slider.value}, seed={random_state_slider.value}...")
 
     # Prepare data
     X_data = df[['x', 'y']].values
     y_true = df['true_cluster'].values
 
     # Manual K-Means evolution to capture each iteration
-    rng = np.random.default_rng(42)
+    rng = np.random.default_rng(random_state_slider.value)
     current_centroids = X_data[rng.choice(X_data.shape[0], k_clusters_slider.value, replace=False)]
 
     print(f"🎯 Initial centroids selected from data points")
@@ -231,40 +204,7 @@ def __(k_clusters_slider, max_iterations_slider, df, np, pairwise_distances_argm
 
 
 @app.cell
-def __(mo, actual_iterations, final_ari):
-    mo.md(
-        f"""
-        ## 📊 K-Means Evolution Complete
-
-        **Performance:**
-        - **Total Iterations:** {actual_iterations}
-        - **Final ARI:** {final_ari:.3f} (1.0 = perfect match)
-
-        **Evolution Summary:**
-        - Start with random centroids (Iteration 0)
-        - Each iteration: Assignment → Update → Check Convergence
-        - Watch clusters form and stabilize over time
-        """
-    )
-    return
-
-
-@app.cell
-def __(mo):
-    mo.md(
-        r"""
-        ## 🎬 Cluster Evolution Viewer
-
-        **Step through each iteration to see how clusters evolve!**
-
-        Use the slider below to explore different iterations.
-        """
-    )
-    return
-
-
-@app.cell
-def __(mo, iteration_history):
+def __(mo, actual_iterations, final_ari, iteration_history):
     # Create iteration slider
     iteration_slider = mo.ui.slider(
         0,
@@ -274,7 +214,15 @@ def __(mo, iteration_history):
         show_value=True
     )
 
-    iteration_slider
+    mo.md(
+        f"""
+        ## 📊 K-Means Evolution Results
+
+        **Performance:** Total Iterations: {actual_iterations} | Final ARI: {final_ari:.3f} (1.0 = perfect)
+
+        **Evolution Viewer:** {iteration_slider}
+        """
+    )
     return iteration_slider,
 
 
@@ -357,11 +305,12 @@ def __(iteration_slider, X_data, ConvexHull, go, np, px, iteration_history):
         name='Centroids'
     ))
 
-    # Add iteration information
+    # Add iteration information in bottom-right corner
     evolution_fig.add_annotation(
         text=f"<b>Iteration {selected_iter}</b><br>ARI: {iter_data['ari']:.3f}",
         xref="paper", yref="paper",
-        x=0.02, y=0.98, showarrow=False,
+        x=0.98, y=0.02, showarrow=False,
+        xanchor="right", yanchor="bottom",
         bgcolor="rgba(255,255,255,0.9)",
         bordercolor="black",
         borderwidth=1,
