@@ -136,64 +136,22 @@ def __(cluster_std_slider, make_blobs, n_samples_slider, n_true_clusters_slider,
 
 @app.cell
 def __(go, X, y_true, mo, np):
-    # Initial data visualization
-    def plot_data(X_data, y_labels, title="Generated Data"):
-        fig = go.Figure()
-        
-        # Plot data points
-        fig.add_trace(go.Scatter(
-            x=X_data[:, 0],
-            y=X_data[:, 1],
-            mode='markers',
-            marker=dict(
-                size=8,
-                color=y_labels,
-                colorscale='Viridis',
-                showscale=True,
-                colorbar=dict(title="True Cluster")
-            ),
-            name="Data Points",
-            hovertemplate='X: %{x:.2f}<br>Y: %{y:.2f}<extra></extra>'
-        ))
-        
-        fig.update_layout(
-            title=title,
-            xaxis_title="Feature 1",
-            yaxis_title="Feature 2",
-            showlegend=True,
-            width=700,
-            height=500
-        )
-        
-        return fig
-
-    # Toggle for coloring by true labels
+    # Toggle for coloring by true labels vs cluster assignments
     show_true_labels_toggle = mo.ui.checkbox(
-        value=True, label="Color by true cluster labels"
+        value=False, label="Color by true cluster labels (vs. current assignments)"
     )
     
     mo.md(
         f"""
         {show_true_labels_toggle}
         
-        **Generated Dataset:**
+        **Generated Dataset & K-Means Clustering:**
         """
     )
     
     return (
-        plot_data,
         show_true_labels_toggle,
     )
-
-
-@app.cell
-def __(mo, np, plot_data, show_true_labels_toggle, X, y_true):
-    # Create initial plot based on toggle value
-    initial_fig = plot_data(X, y_true if show_true_labels_toggle.value else np.zeros(len(y_true)))
-    
-    # Display initial plot
-    initial_fig
-    return initial_fig,
 
 
 @app.cell
@@ -231,21 +189,14 @@ def __(KMeans, X, k_clusters_slider, max_iterations_slider, np):
     def calculate_kmeans_iterations(X_data, k, max_iter):
         """Run K-Means and store all iteration states"""
         
-        # Initialize with k-means++ for better starting points
-        kmeans = KMeans(
-            n_clusters=k,
-            init='k-means++',
-            n_init=1,
-            max_iter=1,  # We'll manually iterate
-            random_state=42
-        )
-        
-        # Get initial centroids using k-means++
-        kmeans.fit(X_data)
-        centroids = [kmeans.cluster_centers_.copy()]
+        # Initialize with random centroids (not k-means++) for better visualization
+        np.random.seed(42)  # For reproducible initial centroids
+        random_indices = np.random.choice(len(X_data), k, replace=False)
+        centroids = [X_data[random_indices].copy()]
         
         # Manual iteration to store all states
         current_centroids = centroids[0]
+        converged = False
         
         for iteration in range(max_iter):
             # Assignment step
@@ -262,9 +213,15 @@ def __(KMeans, X, k_clusters_slider, max_iterations_slider, np):
             
             # Check for convergence
             if np.allclose(current_centroids, new_centroids, atol=1e-4):
-                break
+                converged = True
                 
             current_centroids = new_centroids
+        
+        # Continue with same centroids if converged early to fill max iterations
+        if converged:
+            remaining_iters = max_iter - len(centroids) + 1
+            for _ in range(remaining_iters):
+                centroids.append(current_centroids.copy())
         
         # Calculate all labels for each iteration
         all_labels = []
@@ -322,9 +279,9 @@ def __(kmeans_centroids, mo):
 
 
 @app.cell
-def __(ConvexHull, X, go, iteration_slider, kmeans_centroids, kmeans_labels, show_convex_hull_toggle, np, px):
+def __(ConvexHull, X, go, iteration_slider, kmeans_centroids, kmeans_labels, show_convex_hull_toggle, np, px, show_true_labels_toggle, y_true):
     # Dynamic plot update based on iteration
-    def plot_kmeans_iteration(iteration_idx, show_hull=False):
+    def plot_kmeans_iteration(iteration_idx, show_hull=False, show_true_labels=False):
         fig = go.Figure()
         
         # Get current state
@@ -332,46 +289,80 @@ def __(ConvexHull, X, go, iteration_slider, kmeans_centroids, kmeans_labels, sho
         current_centroids = kmeans_centroids[iteration_idx]
         k = len(current_centroids)
         
-        # Color palette
-        colors = px.colors.qualitative.Set1[:k]
+        # Determine coloring
+        if show_true_labels:
+            # Use true cluster labels for coloring
+            plot_labels = y_true
+            n_true_clusters = len(np.unique(y_true))
+            colors = px.colors.qualitative.Viridis[:n_true_clusters]
+            title_suffix = "(True Labels)"
+        else:
+            # Use current cluster assignments for coloring
+            plot_labels = current_labels
+            colors = px.colors.qualitative.Set1[:k]
+            title_suffix = "(Current Assignments)"
         
-        # Plot data points colored by current cluster assignment
-        for cluster_id in range(k):
-            mask = current_labels == cluster_id
-            if np.sum(mask) > 0:
-                fig.add_trace(go.Scatter(
-                    x=X[mask, 0],
-                    y=X[mask, 1],
-                    mode='markers',
-                    marker=dict(
-                        size=8,
-                        color=colors[cluster_id],
-                        opacity=0.7
-                    ),
-                    name=f'Cluster {cluster_id}',
-                    hovertemplate=f'Cluster {cluster_id}<br>X: %{{x:.2f}}<br>Y: %{{y:.2f}}<extra></extra>'
-                ))
-                
-                # Add convex hull if enabled and cluster has enough points
-                if show_hull and np.sum(mask) >= 3:
-                    try:
-                        cluster_points = X[mask]
-                        hull = ConvexHull(cluster_points)
-                        hull_points = cluster_points[hull.vertices]
-                        hull_points = np.vstack([hull_points, hull_points[0]])  # Close the polygon
-                        
-                        fig.add_trace(go.Scatter(
-                            x=hull_points[:, 0],
-                            y=hull_points[:, 1],
-                            mode='lines',
-                            line=dict(color=colors[cluster_id], width=2),
-                            fill='toself',
-                            fillcolor=f'rgba({int(colors[cluster_id][1:3], 16)}, {int(colors[cluster_id][3:5], 16)}, {int(colors[cluster_id][5:7], 16)}, 0.1)',
-                            name=f'Hull {cluster_id}',
-                            hoverinfo='skip'
-                        ))
-                    except Exception:
-                        pass  # Skip hull if calculation fails
+        # Plot data points
+        if show_true_labels:
+            # Color by true clusters
+            for cluster_id in np.unique(plot_labels):
+                mask = plot_labels == cluster_id
+                if np.sum(mask) > 0:
+                    fig.add_trace(go.Scatter(
+                        x=X[mask, 0],
+                        y=X[mask, 1],
+                        mode='markers',
+                        marker=dict(
+                            size=8,
+                            color=colors[cluster_id],
+                            opacity=0.7
+                        ),
+                        name=f'True Cluster {cluster_id}',
+                        hovertemplate=f'True Cluster {cluster_id}<br>X: %{{x:.2f}}<br>Y: %{{y:.2f}}<extra></extra>'
+                    ))
+        else:
+            # Color by current cluster assignments and optionally show convex hulls
+            for cluster_id in range(k):
+                mask = plot_labels == cluster_id
+                if np.sum(mask) > 0:
+                    fig.add_trace(go.Scatter(
+                        x=X[mask, 0],
+                        y=X[mask, 1],
+                        mode='markers',
+                        marker=dict(
+                            size=8,
+                            color=colors[cluster_id],
+                            opacity=0.7
+                        ),
+                        name=f'Cluster {cluster_id}',
+                        hovertemplate=f'Cluster {cluster_id}<br>X: %{{x:.2f}}<br>Y: %{{y:.2f}}<extra></extra>'
+                    ))
+                    
+                    # Add convex hull if enabled and cluster has enough points
+                    if show_hull and np.sum(mask) >= 3:
+                        try:
+                            cluster_points = X[mask]
+                            hull = ConvexHull(cluster_points)
+                            hull_points = cluster_points[hull.vertices]
+                            hull_points = np.vstack([hull_points, hull_points[0]])  # Close the polygon
+                            
+                            # Convert hex color to rgba for fill
+                            hex_color = colors[cluster_id].lstrip('#')
+                            rgb = tuple(int(hex_color[i:i+2], 16) for i in (0, 2, 4))
+                            fill_color = f'rgba({rgb[0]}, {rgb[1]}, {rgb[2]}, 0.1)'
+                            
+                            fig.add_trace(go.Scatter(
+                                x=hull_points[:, 0],
+                                y=hull_points[:, 1],
+                                mode='lines',
+                                line=dict(color=colors[cluster_id], width=2),
+                                fill='toself',
+                                fillcolor=fill_color,
+                                name=f'Hull {cluster_id}',
+                                hoverinfo='skip'
+                            ))
+                        except Exception:
+                            pass  # Skip hull if calculation fails
         
         # Plot centroids
         fig.add_trace(go.Scatter(
@@ -402,12 +393,12 @@ def __(ConvexHull, X, go, iteration_slider, kmeans_centroids, kmeans_labels, sho
             )
         
         fig.update_layout(
-            title=f'K-Means Clustering - Iteration {iteration_idx}',
+            title=f'K-Means Clustering - Iteration {iteration_idx} {title_suffix}',
             xaxis_title="Feature 1",
             yaxis_title="Feature 2",
             showlegend=True,
-            width=700,
-            height=500,
+            width=800,
+            height=600,
             legend=dict(
                 x=1.02,
                 y=1,
@@ -421,7 +412,9 @@ def __(ConvexHull, X, go, iteration_slider, kmeans_centroids, kmeans_labels, sho
 
     # Create plot for current iteration
     current_iteration_fig = plot_kmeans_iteration(
-        iteration_slider.value, show_convex_hull_toggle.value
+        iteration_slider.value, 
+        show_convex_hull_toggle.value,
+        show_true_labels_toggle.value
     )
     
     return (
@@ -435,6 +428,9 @@ def __(current_iteration_fig, mo):
     # Display the interactive plot
     current_iteration_fig
     return
+
+
+
 
 
 @app.cell
