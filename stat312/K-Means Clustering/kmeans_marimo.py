@@ -25,7 +25,7 @@ def __(mo):
 
         ## What You'll See
 
-        - **Random Initialization**: Initial random centroid placement
+        - **Random Initialisation**: Initial random centroid placement
         - **Assignment Step**: Points assigned to nearest centroids
         - **Update Step**: Centroids moved to cluster means
         - **Convergence**: When centroids stop changing significantly
@@ -142,9 +142,17 @@ def __(k_clusters_slider, max_iterations_slider, random_state_slider, df, np, pa
 
     # Manual K-Means evolution to capture each iteration
     rng = np.random.default_rng(random_state_slider.value)
-    current_centroids = X_data[rng.choice(X_data.shape[0], k_clusters_slider.value, replace=False)]
 
-    print(f"🎯 Initial centroids selected from data points")
+    # Initialise centroids randomly within data bounds (for better educational visualisation)
+    x_min, x_max = X_data[:, 0].min(), X_data[:, 0].max()
+    y_min, y_max = X_data[:, 1].min(), X_data[:, 1].max()
+    current_centroids = rng.uniform(
+        low=[x_min, y_min],
+        high=[x_max, y_max],
+        size=(k_clusters_slider.value, 2)
+    )
+
+    print(f"🎯 Initial centroids randomly placed within data bounds: [{x_min:.2f}, {x_max:.2f}] × [{y_min:.2f}, {y_max:.2f}]")
 
     # Store initial state
     iteration_data = {

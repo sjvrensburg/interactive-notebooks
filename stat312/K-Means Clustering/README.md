@@ -8,7 +8,7 @@
 
 This interactive tutorial demonstrates the **K-Means clustering algorithm** through visual, step-by-step evolution:
 
-- **Random Initialization**: How initial centroids are randomly placed
+- **Random Initialisation**: How initial centroids are randomly placed
 - **Assignment Step**: Points assigned to their nearest centroids
 - **Update Step**: Centroids moved to the mean of their assigned points
 - **Convergence**: When and how the algorithm stabilizes
@@ -23,12 +23,12 @@ This interactive tutorial demonstrates the **K-Means clustering algorithm** thro
 - **k Parameter**: Set the number of clusters to find
 - **Maximum Iterations**: Limit the evolution process
 
-### Visualization
+### Visualisation
 - **Iteration Slider**: Step through each iteration manually
 - **Convex Hulls**: Semi-transparent cluster boundaries at each step
 - **Centroid Tracking**: Watch centroids move with black X markers
 - **ARI Score**: See how well discovered clusters match ground truth
-- **Color-Coded Points**: Clear visual distinction between clusters
+- **Colour-Coded Points**: Clear visual distinction between clusters
 
 ## 🚀 Running Locally
 
@@ -40,7 +40,7 @@ marimo edit "stat312/K-Means Clustering/kmeans_marimo.py"
 marimo run "stat312/K-Means Clustering/kmeans_marimo.py"
 ```
 
-## 📈 Algorithm Steps Visualized
+## 📈 Algorithm Steps Visualised
 
 1. **Iteration 0**: Random initial centroid placement
 2. **Early Iterations**: Watch clusters begin to form
@@ -58,7 +58,7 @@ where:
 - $\mu_i$ = centroid of cluster $i$
 
 **Algorithm**:
-1. Initialize $k$ centroids randomly
+1. Initialise $k$ centroids randomly
 2. **Assignment**: Assign each point to nearest centroid
 3. **Update**: Move each centroid to mean of assigned points
 4. **Repeat** steps 2-3 until convergence
@@ -70,14 +70,14 @@ where:
 This tutorial is part of the STAT312 course, demonstrating:
 - Unsupervised learning fundamentals
 - Clustering algorithm mechanics
-- Initialization sensitivity
-- Convergence behavior
+- Initialisation sensitivity
+- Convergence behaviour
 - Performance evaluation (Adjusted Rand Index)
 
 ### Learning Objectives
 - Understand the iterative nature of K-Means
-- Recognize the importance of initialization
-- Visualize how clusters evolve over time
+- Recognise the importance of initialisation
+- Visualise how clusters evolve over time
 - Learn when the algorithm converges
 - Evaluate clustering quality with ARI
 
@@ -85,7 +85,7 @@ This tutorial is part of the STAT312 course, demonstrating:
 
 **Built with**:
 - **Marimo**: Reactive Python notebooks
-- **Plotly**: Interactive visualizations
+- **Plotly**: Interactive visualisations
 - **scikit-learn**: K-Means implementation
 - **NumPy/SciPy**: Numerical computing and convex hulls
 
