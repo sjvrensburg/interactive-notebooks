@@ -14,28 +14,28 @@ def __():
 def __(mo):
     mo.md(
         r"""
-        # K-Means Clustering Tutorial
+        # K-Means Clustering Evolution Tutorial
         
-        Welcome to this **interactive K-Means clustering tutorial**! This notebook demonstrates:
+        Watch the **step-by-step evolution** of the K-Means algorithm! This notebook demonstrates:
         
         1. **Generate synthetic data** with configurable parameters
-        2. **Randomly initialize centroids** with a button click
-        3. **Run the K-Means algorithm** step-by-step
-        4. **Visualize results** with convex hulls
+        2. **Run K-Means iteratively** with manual iteration capture
+        3. **Step through iterations** with an interactive slider
+        4. **Visualize cluster evolution** with convex hulls at each step
         
-        ## What is K-Means Clustering?
+        ## What You'll See
         
-        **K-Means** partitions data into $k$ clusters by minimizing within-cluster sum of squares.
+        - **Random Initialization**: Initial random centroid placement
+        - **Assignment Step**: Points assigned to nearest centroids
+        - **Update Step**: Centroids moved to cluster means
+        - **Convergence**: When centroids stop changing significantly
+        - **Evolution**: How clusters grow and stabilize over iterations
         
-        ### Algorithm Steps:
-        1. **Random Initialization**: Select $k$ random initial centroids
-        2. **Assignment**: Assign each point to the nearest centroid
-        3. **Update**: Recalculate centroids as cluster means
-        4. **Convergence**: Repeat until centroids stabilize
+        ### Algorithm Steps Visualized:
         
-        ### Mathematical Objective:
-        
-        $$\min_{C_1,\ldots,C_k} \sum_{i=1}^k \sum_{x \in C_i} \|x - \mu_i\|^2$$
+        1. **Iteration 0**: Random initial centroids
+        2. **Each Subsequent**: Assignment → Update → Check Convergence
+        3. **Final**: Stable cluster configuration
         """
     )
     return
@@ -48,6 +48,7 @@ def __():
     import pandas as pd
     from sklearn.cluster import KMeans
     from sklearn.datasets import make_blobs
+    from sklearn.metrics import pairwise_distances_argmin_min, adjusted_rand_score
     import plotly.graph_objects as go
     import plotly.express as px
     from scipy.spatial import ConvexHull
@@ -56,6 +57,8 @@ def __():
         ConvexHull,
         KMeans,
         make_blobs,
+        pairwise_distances_argmin_min,
+        adjusted_rand_score,
         go,
         np,
         pd,
@@ -101,7 +104,7 @@ def __(mo):
 @app.cell
 def __(make_blobs, n_samples_slider, n_true_clusters_slider, cluster_std_slider, pd):
     # Generate synthetic dataset
-    X_data, y_true_data = make_blobs(
+    data_x, data_y = make_blobs(
         n_samples=n_samples_slider.value,
         centers=n_true_clusters_slider.value,
         cluster_std=cluster_std_slider.value,
@@ -109,8 +112,8 @@ def __(make_blobs, n_samples_slider, n_true_clusters_slider, cluster_std_slider,
     )
     
     # Create DataFrame
-    df = pd.DataFrame(X_data, columns=['x', 'y'])
-    df['true_cluster'] = y_true_data
+    df = pd.DataFrame(data_x, columns=['x', 'y'])
+    df['true_cluster'] = data_y
     
     return df
 
@@ -119,9 +122,9 @@ def __(make_blobs, n_samples_slider, n_true_clusters_slider, cluster_std_slider,
 def __(mo):
     mo.md(
         r"""
-        ## 🎯 K-Means Configuration
+        ## 🚀 K-Means Evolution Setup
         
-        Press the button to randomly initialize centroids and run the algorithm!
+        Configure the algorithm and watch it evolve step by step!
         """
     )
     return
@@ -138,9 +141,9 @@ def __(mo):
         start=5, stop=30, step=1, value=15, label="Maximum iterations"
     )
     
-    # Button to run K-Means
+    # Button to run K-Means evolution
     run_button = mo.ui.button(
-        label="🚀 Run K-Means with Random Centroids",
+        label="🎬 Run K-Means Evolution",
         value=False
     )
 
@@ -159,55 +162,101 @@ def __(mo):
 
 
 @app.cell
-def __(run_button, k_clusters_slider, max_iterations_slider, df, KMeans, np):
+def __(run_button, k_clusters_slider, max_iterations_slider, df, KMeans, np, pairwise_distances_argmin_min, adjusted_rand_score, mo):
     # State management - only run when button is pressed
-    kmeans = None
-    labels = []
-    final_centroids = []
-    ari = 0
-    iterations = 0
+    iteration_history = []
     
     if not run_button.value:
-        status_md = "Press the button above to run K-Means!"
+        status_md = "Press the button above to run K-Means evolution!"
+        iteration_slider = mo.ui.slider(0, 0, value=0, label="Iteration", disabled=True)
     else:
         # Prepare data
-        _X = df[['x', 'y']].values
-        _y_true = df['true_cluster'].values
+        X_data = df[['x', 'y']].values
+        y_true = df['true_cluster'].values
         
-        # Run K-Means with random initialization
+        # Manual K-Means evolution to capture each iteration
+        rng = np.random.default_rng()
+        current_centroids = X_data[rng.choice(X_data.shape[0], k_clusters_slider.value, replace=False)]
+        
+        # Store initial state
+        iteration_data = {
+            'iteration': 0,
+            'centroids': current_centroids.copy(),
+            'labels': pairwise_distances_argmin_min(current_centroids, X_data)[1],
+            'ari': adjusted_rand_score(y_true, pairwise_distances_argmin_min(current_centroids, X_data)[1])
+        }
+        iteration_history = [iteration_data]
+        
+        # Manual K-Means iterations
+        actual_iterations = 0
+        for i in range(max_iterations_slider.value):
+            # Assignment step
+            old_labels = pairwise_distances_argmin_min(current_centroids, X_data)[1]
+            
+            # Update step - calculate new centroids
+            new_centroids = np.zeros_like(current_centroids)
+            for j in range(k_clusters_slider.value):
+                cluster_points = X_data[old_labels == j]
+                if len(cluster_points) > 0:
+                    new_centroids[j] = cluster_points.mean(axis=0)
+                else:
+                    new_centroids[j] = current_centroids[j]
+            
+            # Check for convergence
+            if np.allclose(current_centroids, new_centroids):
+                actual_iterations = i + 1
+                break
+            
+            current_centroids = new_centroids
+            current_labels = pairwise_distances_argmin_min(current_centroids, X_data)[1]
+            
+            # Store this iteration
+            iteration_data = {
+                'iteration': i + 1,
+                'centroids': current_centroids.copy(),
+                'labels': current_labels.copy(),
+                'ari': adjusted_rand_score(y_true, current_labels)
+            }
+            iteration_history.append(iteration_data)
+        else:
+            actual_iterations = max_iterations_slider.value
+        
+        # Create final kmeans object for reference
         kmeans = KMeans(
             n_clusters=k_clusters_slider.value,
-            init='random',  # Random initialization
-            n_init=1,        # Single run with random start
-            max_iter=max_iterations_slider.value,
-            random_state=None,  # No seed for true randomness
+            init=iteration_history[-1]['centroids'],
+            n_init=1,
+            max_iter=1,
+            random_state=42
         )
+        kmeans.fit(X_data)
         
-        # Fit the model
-        kmeans.fit(_X)
-        
-        # Get results
-        labels = kmeans.labels_
-        final_centroids = kmeans.cluster_centers_
-        iterations = kmeans.n_iter_
-        
-        # Calculate metrics
-        from sklearn.metrics import adjusted_rand_score
-        ari = adjusted_rand_score(_y_true, labels)
+        final_ari = iteration_history[-1]['ari']
         
         status_md = f"""
-        ## 📊 K-Means Results
+        ## 📊 K-Means Evolution Complete
         
         **Performance:**
-        - **Iterations to converge:** {iterations}
-        - **Adjusted Rand Index:** {ari:.3f} (1.0 = perfect match)
-        - **Final Centroids:** {len(final_centroids)}
+        - **Total Iterations:** {actual_iterations}
+        - **Final ARI:** {final_ari:.3f} (1.0 = perfect match)
+        - **Final Centroids:** {len(kmeans.cluster_centers_)}
         
-        **Final Centroid Locations:**
-        {chr(10).join([f"Centroid {i+1}: ({c[0]:.2f}, {c[1]:.2f})" for i, c in enumerate(final_centroids)])}
+        **Evolution Summary:**
+        - Start with random centroids (Iteration 0)
+        - Each iteration: Assignment → Update → Check Convergence
+        - Watch clusters form and stabilize over time
         """
+        
+        # Create iteration slider
+        iteration_slider = mo.ui.slider(
+            0, 
+            len(iteration_history) - 1, 
+            value=len(iteration_history) - 1, 
+            label="Iteration", 
+            show_value=True
+        )
     
-    return status_md, kmeans, labels, final_centroids, ari, iterations
+    return status_md, kmeans, iteration_history, iteration_slider
 
 
 @app.cell
@@ -218,72 +267,96 @@ def __(status_md, mo):
 
 
 @app.cell
-def __(kmeans, labels, df, ConvexHull, go, mo, np, px):
-    # Create visualization with convex hulls
-    
-    if kmeans is None:
-        viz_md = mo.md("⚠️ No K-Means results to display.")
+def __(mo):
+    mo.md(
+        r"""
+        ## 🎬 Cluster Evolution Viewer
+        
+        **Step through each iteration to see how clusters evolve!**
+        
+        Use the slider below to:
+        - **Iteration 0**: Random initial centroids
+        - **Early Iterations**: Watch clusters form
+        - **Later Iterations**: See convergence process
+        - **Final State**: Stable cluster configuration
+        
+        Each iteration shows:
+        - **Data Points**: Colored by current cluster assignment
+        - **Centroids**: Black X marks (white outline)
+        - **Convex Hulls**: Semi-transparent cluster boundaries
+        - **ARI Score**: How well clusters match true labels
+        """
+    )
+    return
+
+
+@app.cell
+def __(iteration_slider, mo, df, ConvexHull, go, np, px, iteration_history):
+    # Create visualization for selected iteration
+    if len(iteration_history) == 0:
+        viz_md = mo.md("Run the algorithm first to see the evolution!")
     else:
-        # Get original data
-        X = df[['x', 'y']].values
+        # Get selected iteration data
+        selected_iter = iteration_slider.value
+        iter_data = iteration_history[selected_iter]
+        plot_X_data = df[['x', 'y']].values
         
         # Create figure
-        fig = go.Figure()
+        evolution_fig = go.Figure()
         
         # Define colors for each cluster
-        colors = ['red', 'blue', 'green', 'orange', 'purple', 'cyan', 'magenta', 'brown']
+        cluster_colors = ['red', 'blue', 'green', 'orange', 'purple', 'cyan', 'magenta', 'brown']
         
-        # Add convex hulls for each cluster
-        for cluster_id in np.unique(labels):
+        # Add convex hulls for each cluster in this iteration
+        for cluster_idx in np.unique(iter_data['labels']):
             # Get points for this cluster
-            cluster_points = X[labels == cluster_id]
+            cluster_pts = plot_X_data[iter_data['labels'] == cluster_idx]
             
             # Only add hull if we have enough points
-            if len(cluster_points) >= 3:
+            if len(cluster_pts) >= 3:
                 try:
                     # Calculate convex hull
-                    hull = ConvexHull(cluster_points)
-                    hull_points = cluster_points[hull.vertices]
+                    cluster_hull = ConvexHull(cluster_pts)
+                    hull_pts = cluster_pts[cluster_hull.vertices]
                     
-                    # Close the polygon by adding the first point at the end
-                    hull_points_closed = np.vstack([hull_points, hull_points[0]])
+                    # Close the polygon
+                    hull_pts_closed = np.vstack([hull_pts, hull_pts[0]])
                     
                     # Convert color to RGB for fillcolor
-                    color_hex = px.colors.qualitative.Plotly[cluster_id % len(px.colors.qualitative.Plotly)]
-                    color_rgb = px.colors.hex_to_rgb(color_hex)
+                    fill_color_hex = px.colors.qualitative.Plotly[cluster_idx % len(px.colors.qualitative.Plotly)]
+                    fill_color_rgb = px.colors.hex_to_rgb(fill_color_hex)
                     
                     # Add hull trace
-                    fig.add_trace(go.Scatter(
-                        x=hull_points_closed[:, 0],
-                        y=hull_points_closed[:, 1],
+                    evolution_fig.add_trace(go.Scatter(
+                        x=hull_pts_closed[:, 0],
+                        y=hull_pts_closed[:, 1],
                         mode='lines',
                         fill='toself',
-                        fillcolor=f'rgba({color_rgb[0]}, {color_rgb[1]}, {color_rgb[2]}, 0.2)',
-                        line=dict(color=colors[cluster_id % len(colors)], width=2),
-                        name=f'Cluster {cluster_id}',
+                        fillcolor=f'rgba({fill_color_rgb[0]}, {fill_color_rgb[1]}, {fill_color_rgb[2]}, 0.2)',
+                        line=dict(color=cluster_colors[cluster_idx % len(cluster_colors)], width=2),
+                        name=f'Cluster {cluster_idx}',
                         showlegend=False
                     ))
                 except:
-                    # Skip hull if calculation fails
                     pass
         
         # Add data points colored by cluster
-        fig.add_trace(go.Scatter(
-            x=X[:, 0],
-            y=X[:, 1],
+        evolution_fig.add_trace(go.Scatter(
+            x=plot_X_data[:, 0],
+            y=plot_X_data[:, 1],
             mode='markers',
             marker=dict(
                 size=8,
-                color=[colors[i % len(colors)] for i in labels],
+                color=[cluster_colors[i % len(cluster_colors)] for i in iter_data['labels']],
                 opacity=0.8
             ),
             name='Data Points'
         ))
         
-        # Add centroids
-        fig.add_trace(go.Scatter(
-            x=kmeans.cluster_centers_[:, 0],
-            y=kmeans.cluster_centers_[:, 1],
+        # Add centroids for this iteration
+        evolution_fig.add_trace(go.Scatter(
+            x=iter_data['centroids'][:, 0],
+            y=iter_data['centroids'][:, 1],
             mode='markers',
             marker=dict(
                 size=20,
@@ -294,22 +367,37 @@ def __(kmeans, labels, df, ConvexHull, go, mo, np, px):
             name='Centroids'
         ))
         
-        fig.update_layout(
-            title=f'K-Means Clustering Results (k={len(kmeans.cluster_centers_)})',
+        # Add iteration information
+        evolution_fig.add_annotation(
+            text=f"<b>Iteration {selected_iter}</b><br>ARI: {iter_data['ari']:.3f}",
+            xref="paper", yref="paper",
+            x=0.02, y=0.98, showarrow=False,
+            bgcolor="rgba(255,255,255,0.9)",
+            bordercolor="black",
+            borderwidth=1,
+            font=dict(size=12)
+        )
+        
+        evolution_fig.update_layout(
+            title=f'K-Means Evolution - Iteration {selected_iter}',
             xaxis_title='X',
             yaxis_title='Y',
             width=800,
             height=600,
             showlegend=True,
             legend=dict(
-                items=[
-                    dict(label='Data Points', marker=dict(size=8)),
-                    dict(label='Centroids', marker=dict(symbol='x', size=20)),
-                ]
+                yanchor="top",
+                y=0.99,
+                xanchor="left",
+                x=0.01,
+                bgcolor="rgba(255,255,255,0.8)",
+                bordercolor="black",
+                borderwidth=1,
+                font=dict(size=10)
             )
         )
         
-        viz_md = mo.ui.plotly(fig)
+        viz_md = mo.ui.plotly(evolution_fig)
     
     return viz_md
 
