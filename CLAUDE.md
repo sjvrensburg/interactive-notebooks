@@ -46,3 +46,9 @@ Key pattern: interactive controls (`mo.ui.slider`, `mo.ui.dropdown`, `mo.ui.butt
 - **Visualisations**: Plotly exclusively (works in WASM exports; matplotlib is a fallback dependency only)
 - WASM exports are **not** gitignored - they are committed for GitHub Pages hosting
 - `CLAUDE.md` itself **is** gitignored (line 90 of `.gitignore`)
+
+## GitHub Pages Deployment
+
+The site is deployed via legacy branch-based GitHub Pages from the `main` branch root. There is no custom CI workflow — GitHub's built-in `pages-build-deployment` runs automatically on push.
+
+**Critical:** The repo root contains a `.nojekyll` file. This **must not be removed**. Without it, GitHub Pages runs Jekyll processing which silently drops all files starting with `_` (e.g. `_baseIsEqual-*.js`). The marimo WASM export produces underscore-prefixed JS chunks that are required at runtime — removing `.nojekyll` will cause notebooks to render as blank pages.
