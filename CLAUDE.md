@@ -1,0 +1,48 @@
+# CLAUDE.md
+
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+
+## Project Overview
+
+Interactive Statistical Learning Notebooks for university courses (STAT312: Advanced Data Analytics, STAT321: Linear Models and Time Series Analysis, STAT420: Quantitative Data Analysis). Built with **Marimo** reactive notebooks, exported to **WASM** for GitHub Pages hosting.
+
+## Development Commands
+
+All marimo commands must be run via the `marimo` conda environment:
+
+```bash
+# Edit a notebook interactively (opens browser UI)
+conda run -n marimo marimo edit "stat312/k-NN Classification/knn_marimo.py"
+
+# Run a notebook in view-only mode
+conda run -n marimo marimo run "stat312/KDE/kde_marimo.py"
+
+# Export notebook to WASM for GitHub Pages deployment
+conda run -n marimo marimo export html-wasm <notebook> -o <output_dir>
+
+# Install dependencies into the conda environment
+conda run -n marimo pip install -r requirements.txt
+```
+
+There is no test suite or linter configured for this project.
+
+## Architecture
+
+Each topic lives in its own directory under `stat312/`, `stat321/`, or `stat420/` with:
+- `*_marimo.py` - the Marimo notebook source
+- `*_wasm/` - exported WASM build (committed to repo for GitHub Pages)
+- `README.md` - documentation with live demo links
+
+Notebooks are structured as Marimo apps using `@app.cell` decorators. Each cell returns its exports as a tuple, and Marimo's reactivity graph automatically re-executes dependent cells when inputs change.
+
+Key pattern: interactive controls (`mo.ui.slider`, `mo.ui.dropdown`, `mo.ui.button`) drive visualisations built with **Plotly**. Scikit-learn provides the ML algorithm implementations.
+
+## Conventions
+
+- **UK English spelling**: "colour", "visualise", "centre", "licence", "regularisation"
+- **Random seeds**: use year-based seeds (e.g., `np.random.seed(2025)`) for reproducibility
+- **Markdown in cells**: use raw strings `mo.md(r"""...""")` with LaTeX for mathematical formulas
+- **Notebook width**: `marimo.App(width="medium")`
+- **Visualisations**: Plotly exclusively (works in WASM exports; matplotlib is a fallback dependency only)
+- WASM exports are **not** gitignored - they are committed for GitHub Pages hosting
+- `CLAUDE.md` itself **is** gitignored (line 90 of `.gitignore`)

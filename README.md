@@ -1,6 +1,6 @@
 # Interactive Statistical Learning Notebooks
 
-🎓 **Interactive demonstrations for Advanced Data Analytics and Quantitative Data Analysis** - Built with [Marimo](https://marimo.io/)
+🎓 **Interactive demonstrations for Advanced Data Analytics, Linear Models, and Quantitative Data Analysis** - Built with [Marimo](https://marimo.io/)
 
 [![GitHub Pages](https://img.shields.io/badge/GitHub%20Pages-Live%20Demos-blue)](https://sjvrensburg.github.io/interactive-notebooks/)
 [![License: CC BY-SA 4.0](https://img.shields.io/badge/License-CC%20BY--SA%204.0-lightgrey.svg)](https://creativecommons.org/licenses/by-sa/4.0/)
@@ -60,6 +60,20 @@ Explore these interactive statistical learning concepts directly in your browser
 - ⚙️ Adjust k, sample size, and cluster separation
 
 [📖 View Documentation](./stat312/K-Means%20Clustering/README.md) | [💻 Run Locally](./stat312/K-Means%20Clustering/kmeans_marimo.py)
+
+### STAT321: Linear Models and Time Series Analysis
+
+#### 📐 [OLS Geometry Explorer](https://sjvrensburg.github.io/interactive-notebooks/stat321/OLS%20Geometry/ols_geometry_wasm/)
+
+**Explore the geometric interpretation of Ordinary Least Squares in 3D:**
+
+- 📊 Visualise the column space, projection, and residuals in observation space
+- 🎛️ Edit regressor and response vectors interactively
+- 📐 Confirm orthogonality of residuals with right-angle markers
+- 🧮 Inspect projection and residual-maker matrices with property verification
+- 📈 Track β̂, ŷ, SSR, and R² in real time
+
+[📖 View Documentation](./stat321/OLS%20Geometry/README.md) | [💻 Run Locally](./stat321/OLS%20Geometry/ols_geometry_marimo.py)
 
 ### STAT420: Quantitative Data Analysis
 
@@ -156,6 +170,11 @@ interactive-notebooks/
 │       ├── kmeans_marimo.py             # K-Means evolution tutorial
 │       ├── kmeans_wasm/                 # WASM export for GitHub Pages
 │       └── README.md                    # Demo documentation
+├── stat321/                              # STAT321: Linear Models and Time Series
+│   └── OLS Geometry/
+│       ├── ols_geometry_marimo.py        # OLS geometry explorer
+│       ├── ols_geometry_wasm/            # WASM export for GitHub Pages
+│       └── README.md                     # Demo documentation
 ├── stat420/                              # STAT420: Quantitative Data Analysis
 │   ├── cart_pruning_marimo.py           # Decision trees and pruning tutorial
 │   ├── cart_wasm/                       # WASM export for GitHub Pages
@@ -179,6 +198,16 @@ interactive-notebooks/
 - Bias-variance trade-off visualisation
 - Cross-validation and model evaluation
 - Decision boundary analysis
+
+### STAT321: Linear Models and Time Series Analysis
+**Focus**: Geometric interpretation of linear regression
+
+**Key Topics**:
+- Ordinary Least Squares geometry in observation space
+- Projection matrices and residual-maker matrices
+- Column space and orthogonal projection
+- Centred and uncentred R²
+- Pythagorean decomposition of sum of squares
 
 ### STAT420: Quantitative Data Analysis
 **Focus**: Tree-based methods and model complexity
