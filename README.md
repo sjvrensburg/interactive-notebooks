@@ -146,7 +146,7 @@ marimo edit "stat312/k-NN Classification/knn_marimo.py"
 
 ```bash
 # Export a notebook to standalone WASM application
-marimo export html notebook.py --include-code -o output_directory/
+marimo export html-wasm notebook.py -o output_directory/
 ```
 
 ## 📁 Repository Structure
