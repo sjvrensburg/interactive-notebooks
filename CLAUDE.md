@@ -39,16 +39,25 @@ Key pattern: interactive controls (`mo.ui.slider`, `mo.ui.dropdown`, `mo.ui.butt
 
 ## Conventions
 
+- **Python version**: 3.12 or higher required
 - **UK English spelling**: "colour", "visualise", "centre", "licence", "regularisation"
 - **Random seeds**: use year-based seeds (e.g., `np.random.seed(2025)`) for reproducibility
 - **Markdown in cells**: use raw strings `mo.md(r"""...""")` with LaTeX for mathematical formulas
-- **Notebook width**: `marimo.App(width="medium")`
+- **Notebook App setup**: `marimo.App(width="medium", app_title="Title")`; use `width="full"` for 3D visualisations
 - **Visualisations**: Plotly exclusively (works in WASM exports; matplotlib is a fallback dependency only)
 - WASM exports are **not** gitignored - they are committed for GitHub Pages hosting
-- `CLAUDE.md` itself **is** gitignored (line 90 of `.gitignore`)
+- `CLAUDE.md` itself **is** gitignored — use `git add -f CLAUDE.md` when it needs to be committed
+
+## Git Workflow
+
+- Feature branches per notebook (e.g., `stat321-fwl-theorem-notebook`)
+- PR workflow with merge to main
+- Commit messages: imperative mood, descriptive
 
 ## GitHub Pages Deployment
 
 The site is deployed via legacy branch-based GitHub Pages from the `main` branch root. There is no custom CI workflow — GitHub's built-in `pages-build-deployment` runs automatically on push.
 
 **Critical:** The repo root contains a `.nojekyll` file. This **must not be removed**. Without it, GitHub Pages runs Jekyll processing which silently drops all files starting with `_` (e.g. `_baseIsEqual-*.js`). The marimo WASM export produces underscore-prefixed JS chunks that are required at runtime — removing `.nojekyll` will cause notebooks to render as blank pages.
+
+**WASM export cleanup:** The `marimo export html-wasm` command may copy `CLAUDE.md` into the output directory. Always check and remove it from the WASM output before committing.
