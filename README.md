@@ -75,6 +75,18 @@ Explore these interactive statistical learning concepts directly in your browser
 
 [📖 View Documentation](./stat321/OLS%20Geometry/README.md) | [💻 Run Locally](./stat321/OLS%20Geometry/ols_geometry_marimo.py)
 
+#### 🔀 [FWL Theorem Explorer](https://sjvrensburg.github.io/interactive-notebooks/stat321/fwl-theorem/fwl_wasm/)
+
+**Step through the Frisch-Waugh-Lovell theorem in 3D:**
+
+- 🎚️ Walk through the partialling-out process with a step slider (0–4)
+- 📐 Two views: displaced path (vector subtraction) and origin directions (orthogonality)
+- 🎨 Colour-coded explanations that match the plot vectors
+- 🔍 See how FWL regression recovers the same β̂₁ as full OLS
+- 📊 Decompose ŷ = P_{X₂} ŷ + β̂₁ X̃₁ to understand why it works
+
+[📖 View Documentation](./stat321/fwl-theorem/README.md) | [💻 Run Locally](./stat321/fwl-theorem/fwl_marimo.py)
+
 ### STAT420: Quantitative Data Analysis
 
 #### 🌳 [Classification and Regression Trees (CART)](https://sjvrensburg.github.io/interactive-notebooks/stat420/cart_wasm/)
@@ -171,9 +183,13 @@ interactive-notebooks/
 │       ├── kmeans_wasm/                 # WASM export for GitHub Pages
 │       └── README.md                    # Demo documentation
 ├── stat321/                              # STAT321: Linear Models and Time Series
-│   └── OLS Geometry/
-│       ├── ols_geometry_marimo.py        # OLS geometry explorer
-│       ├── ols_geometry_wasm/            # WASM export for GitHub Pages
+│   ├── OLS Geometry/
+│   │   ├── ols_geometry_marimo.py        # OLS geometry explorer
+│   │   ├── ols_geometry_wasm/            # WASM export for GitHub Pages
+│   │   └── README.md                     # Demo documentation
+│   └── fwl-theorem/
+│       ├── fwl_marimo.py                 # FWL theorem explorer
+│       ├── fwl_wasm/                     # WASM export for GitHub Pages
 │       └── README.md                     # Demo documentation
 ├── stat420/                              # STAT420: Quantitative Data Analysis
 │   ├── cart_pruning_marimo.py           # Decision trees and pruning tutorial
@@ -208,6 +224,8 @@ interactive-notebooks/
 - Column space and orthogonal projection
 - Centred and uncentred R²
 - Pythagorean decomposition of sum of squares
+- Frisch-Waugh-Lovell theorem and partialling out
+- Fitted value decomposition via FWL
 
 ### STAT420: Quantitative Data Analysis
 **Focus**: Tree-based methods and model complexity
