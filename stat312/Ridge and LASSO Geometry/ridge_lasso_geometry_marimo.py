@@ -48,8 +48,17 @@ def _(mo):
         **corners on the axes**, so contact frequently occurs at a corner —
         producing an **exactly zero** coefficient (sparsity).
 
-        **Controls** — adjust $\rho$, $\hat{\beta}_1$, $\hat{\beta}_2$, and the
-        penalty $\lambda$ to watch the contact point move.
+        **Controls** — adjust $\rho$, $\hat{\beta}_1$, $\hat{\beta}_2$, and
+        either the budget $t$ or the penalty $\lambda$ to watch the contact
+        point move.
+
+        The two parameterisations are equivalent but show different things.
+        Fixing **$t$** keeps the constraint region *still* — the diamond and
+        the circle never change size, and everything you see moving is the RSS
+        ellipse responding to the data. Fixing **$\lambda$** instead lets the
+        implied budget $t$ float, so the regions themselves resize as $\rho$
+        and $\hat{\boldsymbol{\beta}}$ change. Start with $t$ to learn the
+        geometry; switch to $\lambda$ to see how the two are linked.
         """
     )
     return
@@ -82,6 +91,27 @@ def _(np):
                 break
         return beta
 
+    def lam_for_budget(solver, A, b, size, t, lam_hi=1e4, n_iter=80):
+        """Find λ such that the solution's constraint size equals the budget t.
+
+        `size` maps a coefficient vector to its norm (‖·‖₂ for ridge, ‖·‖₁ for
+        LASSO). Both norms are non-increasing in λ, so a plain bisection is
+        safe. If the unpenalised solution already satisfies the budget the
+        constraint is inactive and λ = 0.
+        """
+        if size(solver(A, b, 0.0)) <= t:
+            return 0.0
+        lo, hi = 0.0, 1.0
+        while size(solver(A, b, hi)) > t and hi < lam_hi:
+            hi *= 2.0
+        for _ in range(n_iter):
+            mid = 0.5 * (lo + hi)
+            if size(solver(A, b, mid)) > t:
+                lo = mid
+            else:
+                hi = mid
+        return 0.5 * (lo + hi)
+
     def ellipse_points(center, A, level, n=160):
         """Points {β : (β−c)' A (β−c) = level} via eigendecomposition of A."""
         w, V = np.linalg.eigh(A)
@@ -90,7 +120,7 @@ def _(np):
         unit = np.vstack([np.cos(theta), np.sin(theta)])          # (2, n)
         scaled = V @ (np.sqrt(level / w)[:, None] * unit)         # (2, n)
         return center[:, None] + scaled                            # (2, n)
-    return ellipse_points, lasso_coordinate_descent, ridge_solution, soft_threshold
+    return ellipse_points, lam_for_budget, lasso_coordinate_descent, ridge_solution, soft_threshold
 
 
 # -------------------------------------------------------------------
@@ -102,24 +132,51 @@ def _(mo):
     beta1 = mo.ui.slider(-3.0, 3.0, value=2.00, step=0.1, label="β̂₁ (OLS)")
     beta2 = mo.ui.slider(-3.0, 3.0, value=0.80, step=0.1, label="β̂₂ (OLS)")
     lam = mo.ui.slider(0.0, 5.0, value=1.20, step=0.05, label="λ (penalty)")
+
+    # Constrained view: t is set directly, so the diamond and the circle are
+    # fixed geometry — they only move when *you* move t. In the penalised view
+    # t is derived from λ, so the regions resize as ρ and β̂ change.
+    budget = mo.ui.slider(0.1, 5.0, value=1.50, step=0.05, label="t (budget)")
+    mode = mo.ui.radio(
+        options=["Constrained — set t", "Penalised — set λ"],
+        value="Constrained — set t",
+        label="Parameterisation",
+    )
+
     show_ols = mo.ui.checkbox(value=True, label="Show OLS point β̂")
     show_contours = mo.ui.checkbox(value=True, label="Show nested RSS contours")
     show_labels = mo.ui.checkbox(value=True, label="Show point labels")
 
-    controls_grid = mo.md(
-        f"""
-        | Parameter             | Value           |
-        |:----------------------|:----------------|
-        | Correlation (ρ)       | {rho}           |
-        | OLS β̂₁               | {beta1}         |
-        | OLS β̂₂               | {beta2}         |
-        | Penalty (λ)           | {lam}           |
-        | Show OLS β̂           | {show_ols}      |
-        | Show contours         | {show_contours} |
-        | Show labels           | {show_labels}   |
-        """
-    )
-    return beta1, beta2, controls_grid, lam, rho, show_contours, show_labels, show_ols
+    return beta1, beta2, budget, lam, mode, rho, show_contours, show_labels, show_ols
+
+
+# -------------------------------------------------------------------
+# Control layout (separate cell: marimo forbids reading .value in the
+# cell that creates the element)
+# -------------------------------------------------------------------
+@app.cell(hide_code=True)
+def _(beta1, beta2, budget, constrained, lam, mo, mode, rho, show_contours,
+      show_labels, show_ols):
+    _tuning = budget if constrained else lam
+    _tuning_name = "Budget (t)" if constrained else "Penalty (λ)"
+
+    controls_grid = mo.vstack([
+        mode,
+        mo.md(
+            f"""
+            | Parameter             | Value           |
+            |:----------------------|:----------------|
+            | Correlation (ρ)       | {rho}           |
+            | OLS β̂₁               | {beta1}         |
+            | OLS β̂₂               | {beta2}         |
+            | {_tuning_name}        | {_tuning}       |
+            | Show OLS β̂           | {show_ols}      |
+            | Show contours         | {show_contours} |
+            | Show labels           | {show_labels}   |
+            """
+        ),
+    ])
+    return (controls_grid,)
 
 
 # -------------------------------------------------------------------
@@ -127,8 +184,8 @@ def _(mo):
 # -------------------------------------------------------------------
 @app.cell(hide_code=True)
 def _(
-    beta1, beta2, ellipse_points, lasso_coordinate_descent, lam, np,
-    ridge_solution, rho,
+    beta1, beta2, budget, ellipse_points, lam, lam_for_budget,
+    lasso_coordinate_descent, mode, np, ridge_solution, rho,
 ):
     # OLS centre of the RSS ellipses
     beta_ols = np.array([beta1.value, beta2.value])
@@ -137,13 +194,27 @@ def _(
     A = np.array([[1.0, rho.value], [rho.value, 1.0]])
     b = A @ beta_ols                       # = X'X β̂_ols  (= X'y)
 
-    lam_val = lam.value
-    ridge_beta = ridge_solution(A, b, lam_val)
-    lasso_beta = lasso_coordinate_descent(A, b, lam_val)
+    _l2 = lambda z: float(np.linalg.norm(z))
+    _l1 = lambda z: float(np.sum(np.abs(z)))
 
-    # Equivalent constraint budgets (size of each region)
-    t_ridge = float(np.linalg.norm(ridge_beta))        # ‖β‖₂
-    t_lasso = float(np.sum(np.abs(lasso_beta)))        # ‖β‖₁
+    constrained = mode.value.startswith("Constrained")
+    if constrained:
+        # t is the control. Both regions share the *same* budget, and neither
+        # changes shape or size when ρ or β̂ move — only the ellipses do.
+        t_ridge = t_lasso = float(budget.value)
+        lam_ridge = lam_for_budget(ridge_solution, A, b, _l2, t_ridge)
+        lam_lasso = lam_for_budget(lasso_coordinate_descent, A, b, _l1, t_lasso)
+    else:
+        # λ is the control; the budgets are whatever the solutions imply, so
+        # the regions resize as ρ and β̂ change.
+        lam_ridge = lam_lasso = float(lam.value)
+
+    ridge_beta = ridge_solution(A, b, lam_ridge)
+    lasso_beta = lasso_coordinate_descent(A, b, lam_lasso)
+
+    if not constrained:
+        t_ridge = _l2(ridge_beta)                      # ‖β‖₂
+        t_lasso = _l1(lasso_beta)                      # ‖β‖₁
 
     # RSS contour level passing through each solution (the "contact" ellipse)
     def rss_level(beta):
@@ -156,7 +227,8 @@ def _(
     lasso_zeroed = [j for j in range(2) if abs(lasso_beta[j]) < 1e-9]
     n_zero = len(lasso_zeroed)
 
-    return A, b, beta_ols, c_lasso, c_ridge, lasso_beta, lasso_zeroed, n_zero, ridge_beta, t_lasso, t_ridge
+    return (A, b, beta_ols, c_lasso, c_ridge, constrained, lam_lasso, lam_ridge,
+            lasso_beta, lasso_zeroed, n_zero, ridge_beta, t_lasso, t_ridge)
 
 
 # -------------------------------------------------------------------
@@ -179,9 +251,9 @@ def _():
 @app.cell(hide_code=True)
 def _(
     A, COLOUR_CONSTRAINT, COLOUR_CONTACT, COLOUR_CONTOUR, COLOUR_LASSO,
-    COLOUR_OLS, COLOUR_RIDGE, beta_ols, c_lasso, c_ridge, ellipse_points,
-    go, lasso_beta, make_subplots, np, ridge_beta, show_contours, show_labels,
-    show_ols, t_lasso, t_ridge,
+    COLOUR_OLS, COLOUR_RIDGE, beta_ols, c_lasso, c_ridge, constrained,
+    ellipse_points, go, lam_lasso, lam_ridge, lasso_beta, make_subplots, np,
+    ridge_beta, show_contours, show_labels, show_ols, t_lasso, t_ridge,
 ):
     # Fixed axis range so the view never shifts as parameters change.
     # ±5 comfortably covers all reasonable cases (OLS β̂ ∈ [−3, 3], and the
@@ -213,8 +285,12 @@ def _(
     _fig = make_subplots(
         rows=1, cols=2,
         subplot_titles=(
-            f"LASSO  —  ℓ₁ ball  (t = ‖β̂‖₁ = {t_lasso:.3f})",
-            f"Ridge  —  ℓ₂ ball  (t = ‖β̂‖₂ = {t_ridge:.3f})",
+            (f"LASSO  —  ℓ₁ ball,  t = {t_lasso:.2f}  (⇒ λ = {lam_lasso:.3f})"
+             if constrained else
+             f"LASSO  —  ℓ₁ ball,  λ = {lam_lasso:.2f}  (⇒ t = ‖β̂_lasso‖₁ = {t_lasso:.3f})"),
+            (f"Ridge  —  ℓ₂ ball,  t = {t_ridge:.2f}  (⇒ λ = {lam_ridge:.3f})"
+             if constrained else
+             f"Ridge  —  ℓ₂ ball,  λ = {lam_ridge:.2f}  (⇒ t = ‖β̂_ridge‖₂ = {t_ridge:.3f})"),
         ),
         horizontal_spacing=0.12,
     )
@@ -308,8 +384,8 @@ def _(
 # -------------------------------------------------------------------
 @app.cell(hide_code=True)
 def _(
-    A, COLOUR_LASSO, COLOUR_OLS, COLOUR_RIDGE, b, go, lasso_coordinate_descent,
-    lam, np, ridge_solution,
+    A, COLOUR_LASSO, COLOUR_OLS, COLOUR_RIDGE, b, beta_ols, constrained, go,
+    lam_lasso, lam_ridge, lasso_coordinate_descent, np, ridge_solution,
 ):
     _lam_grid = np.linspace(0.01, 5.0, 80)
     ridge_path = np.array([ridge_solution(A, b, lm) for lm in _lam_grid])      # (80,2)
@@ -334,17 +410,24 @@ def _(
         x=_lam_grid, y=lasso_path[:, 1], mode="lines",
         line=dict(color=COLOUR_LASSO, width=2.5, dash="dash"), name="LASSO β̂₂",
     ))
-    # OLS asymptotes
+    # OLS asymptotes — the λ→0 limit of both paths is β̂_ols, NOT b = X'X β̂_ols.
     _fig.add_trace(go.Scatter(
-        x=[_lam_grid[0], _lam_grid[-1]], y=[b[0], b[0]], mode="lines",
+        x=[_lam_grid[0], _lam_grid[-1]], y=[beta_ols[0], beta_ols[0]], mode="lines",
         line=dict(color=COLOUR_OLS, width=1, dash="dot"), name="OLS β̂₁",
     ))
     _fig.add_trace(go.Scatter(
-        x=[_lam_grid[0], _lam_grid[-1]], y=[b[1], b[1]], mode="lines",
+        x=[_lam_grid[0], _lam_grid[-1]], y=[beta_ols[1], beta_ols[1]], mode="lines",
         line=dict(color=COLOUR_OLS, width=1, dash="dot"), name="OLS β̂₂",
     ))
-    # Current-λ marker
-    _fig.add_vline(x=lam.value, line=dict(color="#444444", width=1.5, dash="solid"))
+    # Marker(s) for the λ currently in play. In constrained mode each method
+    # needs a different λ to hit the same budget t, so both are drawn.
+    if constrained:
+        _fig.add_vline(x=lam_ridge, line=dict(color=COLOUR_RIDGE, width=1.5, dash="solid"),
+                       annotation_text="λ_ridge", annotation_position="top")
+        _fig.add_vline(x=lam_lasso, line=dict(color=COLOUR_LASSO, width=1.5, dash="solid"),
+                       annotation_text="λ_lasso", annotation_position="bottom")
+    else:
+        _fig.add_vline(x=lam_ridge, line=dict(color="#444444", width=1.5, dash="solid"))
 
     _fig.update_layout(
         title="Coefficient paths — β̂ vs λ  (LASSO hits exactly 0; Ridge only shrinks)",
@@ -363,9 +446,10 @@ def _(
 # -------------------------------------------------------------------
 @app.cell(hide_code=True)
 def _(
-    COLOUR_LASSO, COLOUR_OLS, COLOUR_RIDGE, beta_ols, lam, lasso_beta, mo, n_zero,
-    ridge_beta, rho,
+    COLOUR_LASSO, COLOUR_OLS, COLOUR_RIDGE, beta_ols, constrained, lam_lasso,
+    lasso_beta, mo, n_zero, ridge_beta, rho, t_lasso,
 ):
+    _setting = (f"t = {t_lasso:.2f}" if constrained else f"λ = {lam_lasso:.2f}")
     def _c(colour, text):
         return f'<span style="color:{colour};font-weight:bold">{text}</span>'
 
@@ -375,14 +459,14 @@ def _(
 
     if n_zero == 0:
         _lasso_note = (
-            f"At λ = {lam.value:.2f} the contact lies on a **face** of the "
+            f"At {_setting} the contact lies on a **face** of the "
             f"diamond, so {_lasso} has **no zero** coefficient — both variables "
             f"survive (but shrunk)."
         )
     else:
         zero_which = "β̂₂" if abs(lasso_beta[1]) < 1e-9 else "β̂₁"
         _lasso_note = (
-            f"At λ = {lam.value:.2f} the first ellipse touches a **corner** of "
+            f"At {_setting} the first ellipse touches a **corner** of "
             f"the diamond, so {_lasso} sets **{zero_which} = 0** — a sparse "
             f"solution. This corner geometry is why LASSO performs variable "
             f"selection."
@@ -392,6 +476,18 @@ def _(
         f" ⚠️ High collinearity (ρ = {rho.value:.2f}) stretches the ellipses "
         f"along the 45° diagonal, making LASSO's sparsity much more likely."
         if abs(rho.value) > 0.8 else ""
+    )
+
+    _mode_note = (
+        "*Constrained view: the diamond and the circle are pinned to the budget "
+        "$t$ you chose, so they hold still while $\\rho$ and $\\hat{\\beta}$ move "
+        "the ellipses. Switch to the penalised view to see how the equivalent "
+        "$t$ implied by a fixed $\\lambda$ itself depends on the data.*"
+        if constrained else
+        "*Penalised view: $\\lambda$ is fixed, so the budget $t$ is whatever the "
+        "solution implies — the regions grow and shrink as you move $\\rho$ and "
+        "$\\hat{\\beta}$, and the two panels no longer share a common $t$. Switch "
+        "to the constrained view to hold the geometry still.*"
     )
 
     explanation = mo.md(
@@ -409,6 +505,8 @@ def _(
           axes**, so contact often lands on a corner: {_lasso}.
 
         {_lasso_note}{collinear}
+
+        {_mode_note}
         """
     )
     return (explanation,)
@@ -419,24 +517,31 @@ def _(
 # -------------------------------------------------------------------
 @app.cell(hide_code=True)
 def _(
-    beta_ols, lasso_beta, lam, mo, n_zero, ridge_beta, rho, t_lasso, t_ridge,
+    beta_ols, constrained, lam_lasso, lam_ridge, lasso_beta, mo, n_zero, np,
+    ridge_beta, rho, t_lasso, t_ridge,
 ):
     def _shrink(beta):
         n = np.linalg.norm(beta)
         d = np.linalg.norm(beta_ols)
         return (n / d) if d > 1e-12 else float("nan")
 
+    _heading = (
+        f"budget t = {t_ridge:.2f} fixed, λ derived"
+        if constrained else
+        f"λ = {lam_ridge:.2f} fixed, t derived"
+    )
+
     stats_md = mo.md(
         f"""
-        ### Solutions at λ = {lam.value:.2f}   (ρ = {rho.value:.2f})
+        ### Solutions — {_heading}   (ρ = {rho.value:.2f})
 
-        | Method | β̂₁ | β̂₂ | Constraint budget | Shrinkage ‖β̂‖₂/‖β̂_ols‖₂ |
-        |:--|--:|--:|--:|--:|
-        | **OLS**    | {beta_ols[0]:.4f} | {beta_ols[1]:.4f} | — | 1.000 |
-        | **Ridge**  | {ridge_beta[0]:.4f} | {ridge_beta[1]:.4f} | t₂ = {t_ridge:.4f} | {_shrink(ridge_beta):.3f} |
-        | **LASSO**  | {lasso_beta[0]:.4f} | {lasso_beta[1]:.4f} | t₁ = {t_lasso:.4f} | {_shrink(lasso_beta):.3f} |
+        | Method | β̂₁ | β̂₂ | λ | Budget t | Shrinkage ‖β̂‖₂/‖β̂_ols‖₂ |
+        |:--|--:|--:|--:|--:|--:|
+        | **OLS**    | {beta_ols[0]:.4f} | {beta_ols[1]:.4f} | 0 | — | 1.000 |
+        | **Ridge**  | {ridge_beta[0]:.4f} | {ridge_beta[1]:.4f} | {lam_ridge:.4f} | t₂ = {t_ridge:.4f} | {_shrink(ridge_beta):.3f} |
+        | **LASSO**  | {lasso_beta[0]:.4f} | {lasso_beta[1]:.4f} | {lam_lasso:.4f} | t₁ = {t_lasso:.4f} | {_shrink(lasso_beta):.3f} |
 
-        LASSO zeroes **{n_zero}** coefficient(s) at this λ.
+        LASSO zeroes **{n_zero}** coefficient(s) at this setting.
         Ridge **never** produces an exact zero — it only shrinks.
         """
     )
