@@ -61,6 +61,18 @@ Explore these interactive statistical learning concepts directly in your browser
 
 [📖 View Documentation](./stat312/K-Means%20Clustering/README.md) | [💻 Run Locally](./stat312/K-Means%20Clustering/kmeans_marimo.py)
 
+#### 💎 [Ridge & LASSO Geometry](https://sjvrensburg.github.io/interactive-notebooks/stat312/Ridge%20and%20LASSO%20Geometry/ridge_lasso_geometry_wasm/)
+
+**See the geometric reason LASSO produces sparse solutions and Ridge does not:**
+
+- 💎 Side-by-side constraint regions: ℓ₁ diamond (LASSO) vs ℓ₂ circle (Ridge)
+- 🎯 Nested RSS contours centred at the OLS estimate β̂
+- 📍 Watch the contact point hit a corner (sparsity) or an arc (shrinkage)
+- 📈 Coefficient paths β̂ vs λ showing LASSO hitting exactly zero
+- ⚙️ Adjust correlation ρ, OLS β̂, and penalty λ interactively
+
+[📖 View Documentation](./stat312/Ridge%20and%20LASSO%20Geometry/README.md) | [💻 Run Locally](./stat312/Ridge%20and%20LASSO%20Geometry/ridge_lasso_geometry_marimo.py)
+
 ### STAT321: Linear Models and Time Series Analysis
 
 #### 📐 [OLS Geometry Explorer](https://sjvrensburg.github.io/interactive-notebooks/stat321/OLS%20Geometry/ols_geometry_wasm/)
@@ -178,10 +190,14 @@ interactive-notebooks/
 │   │   ├── nonparam_regression_marimo.py # Kernel regression tutorial
 │   │   ├── nonparam_regression_wasm/     # WASM export for GitHub Pages
 │   │   └── README.md                     # Demo documentation
-│   └── K-Means Clustering/
-│       ├── kmeans_marimo.py             # K-Means evolution tutorial
-│       ├── kmeans_wasm/                 # WASM export for GitHub Pages
-│       └── README.md                    # Demo documentation
+│   ├── K-Means Clustering/
+│   │   ├── kmeans_marimo.py             # K-Means evolution tutorial
+│   │   ├── kmeans_wasm/                 # WASM export for GitHub Pages
+│   │   └── README.md                    # Demo documentation
+│   └── Ridge and LASSO Geometry/
+│       ├── ridge_lasso_geometry_marimo.py # Ridge vs LASSO geometry explorer
+│       ├── ridge_lasso_geometry_wasm/     # WASM export for GitHub Pages
+│       └── README.md                      # Demo documentation
 ├── stat321/                              # STAT321: Linear Models and Time Series
 │   ├── OLS Geometry/
 │   │   ├── ols_geometry_marimo.py        # OLS geometry explorer
