@@ -24,7 +24,7 @@ conda run -n marimo marimo export html-wasm <notebook> -o <output_dir>
 conda run -n marimo pip install -r requirements.txt
 ```
 
-There is no test suite or linter configured for this project.
+There is no test suite or linter configured for this project. Verification is manual: export to WASM and open the build, or run `marimo edit` and exercise the controls.
 
 ## Architecture
 
@@ -32,6 +32,13 @@ Each topic lives in its own directory under `stat312/`, `stat321/`, or `stat420/
 - `*_marimo.py` - the Marimo notebook source
 - `*_wasm/` - exported WASM build (committed to repo for GitHub Pages)
 - `README.md` - documentation with live demo links
+
+Topic directory names are human-readable and may contain spaces (e.g. `stat312/Ridge and LASSO Geometry/`) — quote paths in shell commands. The WASM output directory is conventionally the notebook stem with `_marimo` replaced by `_wasm` (e.g. `ridge_lasso_geometry_marimo.py` → `ridge_lasso_geometry_wasm/`).
+
+There are three hand-maintained indexes that are **not** generated from the filesystem. Adding or renaming a notebook means updating all of them:
+- `index.html` - the GitHub Pages landing page (hand-written card grid linking to each `*_wasm/` build)
+- `README.md` (repo root) - per-course sections with live demo links, docs links, and "Run Locally" source links
+- the topic's own `README.md`
 
 Notebooks are structured as Marimo apps using `@app.cell` decorators. Each cell returns its exports as a tuple, and Marimo's reactivity graph automatically re-executes dependent cells when inputs change.
 
