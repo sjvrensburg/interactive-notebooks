@@ -183,9 +183,12 @@ def _(
     go, lasso_beta, make_subplots, np, ridge_beta, show_contours, show_labels,
     show_ols, t_lasso, t_ridge,
 ):
-    # Shared axis range so both panels share the same geometry
-    _max = max(np.linalg.norm(beta_ols), t_ridge, t_lasso, 1.0) * 1.35
-    _range = [-_max, _max]
+    # Fixed axis range so the view never shifts as parameters change.
+    # ±5 comfortably covers all reasonable cases (OLS β̂ ∈ [−3, 3], and the
+    # constraint regions/contours stay inside this envelope except at the
+    # simultaneous extremes ρ ≈ ±0.95 with large λ). Users can scroll-zoom
+    # out; `uirevision` below preserves that zoom across re-renders.
+    _range = [-5.0, 5.0]
 
     def _contour_traces(level_star, colour_star):
         """Nested faint RSS contours + one bold 'contact' contour."""
@@ -278,15 +281,19 @@ def _(
             textfont=dict(color=COLOUR_RIDGE, size=12), showlegend=False, hoverinfo="skip",
         ), row=1, col=2)
 
-    # Equal-aspect axes (square geometry is the whole point)
+    # Equal-aspect axes (square geometry is the whole point).
+    # Fixed range + uirevision → the view never jumps as sliders move, and any
+    # zoom/pan the user applies is preserved across re-renders.
     _fig.update_xaxes(range=_range, zeroline=True, zerolinewidth=1, zerolinecolor="#cccccc",
-                      scaleanchor="y", scaleratio=1, title="β₁", showgrid=False, row=1, col=1)
+                      scaleanchor="y", scaleratio=1, title="β₁", showgrid=False,
+                      uirevision="geometry", row=1, col=1)
     _fig.update_yaxes(range=_range, zeroline=True, zerolinewidth=1, zerolinecolor="#cccccc",
-                      title="β₂", showgrid=False, row=1, col=1)
+                      title="β₂", showgrid=False, uirevision="geometry", row=1, col=1)
     _fig.update_xaxes(range=_range, zeroline=True, zerolinewidth=1, zerolinecolor="#cccccc",
-                      scaleanchor="y", scaleratio=1, title="β₁", showgrid=False, row=1, col=2)
+                      scaleanchor="y", scaleratio=1, title="β₁", showgrid=False,
+                      uirevision="geometry", row=1, col=2)
     _fig.update_yaxes(range=_range, zeroline=True, zerolinewidth=1, zerolinecolor="#cccccc",
-                      title="β₂", showgrid=False, row=1, col=2)
+                      title="β₂", showgrid=False, uirevision="geometry", row=1, col=2)
 
     _fig.update_layout(
         height=480, margin=dict(l=40, r=20, t=50, b=40),
