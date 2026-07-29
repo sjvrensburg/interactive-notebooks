@@ -114,6 +114,17 @@ Explore these interactive statistical learning concepts directly in your browser
 
 [📖 View Documentation](./stat420/README.md) | [💻 Run Locally](./stat420/cart_pruning_marimo.py)
 
+#### 🧮 [Quadratic Kernel Ridge Regression](https://sjvrensburg.github.io/interactive-notebooks/stat420/Quadratic%20Kernel/quadratic_kernel_wasm/)
+
+**See the kernel trick made visible, from §4.2–4.4 of the kernel ridge regression notes:**
+
+- 🔍 Verify $\kappa(a,b)=(1+a'b)^2$ against its explicit feature map, and cost the $O(N)$ vs $O(N^2)$ saving
+- 📐 Replay the notes' fully-worked $N{=}2,T{=}3$ example with editable $\lambda$, $y$-values, and query point
+- 📦 Watch the feature map bend a circle flat in 3D — equal-radius points collapse onto a plane
+- 🎯 Compare a linear vs quadratic kernel fitting a circular pattern — a linear boundary vs a curved one
+
+[📖 View Documentation](./stat420/Quadratic%20Kernel/README.md) | [💻 Run Locally](./stat420/Quadratic%20Kernel/quadratic_kernel_marimo.py)
+
 ## 🎯 Learning Objectives
 
 These interactive notebooks help you:
@@ -210,7 +221,11 @@ interactive-notebooks/
 ├── stat420/                              # STAT420: Quantitative Data Analysis
 │   ├── cart_pruning_marimo.py           # Decision trees and pruning tutorial
 │   ├── cart_wasm/                       # WASM export for GitHub Pages
-│   └── README.md                        # Demo documentation
+│   ├── README.md                        # Demo documentation
+│   └── Quadratic Kernel/
+│       ├── quadratic_kernel_marimo.py   # Kernel trick explorer (§4.2-4.4)
+│       ├── quadratic_kernel_wasm/       # WASM export for GitHub Pages
+│       └── README.md                    # Demo documentation
 ├── requirements.txt                      # Python dependencies
 ├── CLAUDE.md                            # Development guide for AI assistants
 └── README.md                            # This file
@@ -244,7 +259,7 @@ interactive-notebooks/
 - Fitted value decomposition via FWL
 
 ### STAT420: Quantitative Data Analysis
-**Focus**: Tree-based methods and model complexity
+**Focus**: Tree-based methods, model complexity, and kernel methods
 
 **Key Topics**:
 - Classification and Regression Trees (CART)
@@ -253,6 +268,9 @@ interactive-notebooks/
 - Cost-complexity pruning
 - Overfitting and regularisation techniques
 - Model interpretability
+- Kernel ridge regression and the kernel trick
+- Feature maps and the representer property
+- The quadratic (polynomial) kernel
 
 **Target Audience**:
 
