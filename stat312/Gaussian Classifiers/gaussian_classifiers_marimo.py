@@ -649,7 +649,10 @@ def _(
 ):
     mo.vstack([
         mo.md("### Population Parameters"),
-        mo.hstack([class0_table, class1_table], justify="start", gap=3, wrap=True),
+        mo.hstack(
+            [class0_table, class1_table],
+            justify="start", gap=3, widths=[1, 1],
+        ),
         prior_md,
         tip_md,
         cov_md,
