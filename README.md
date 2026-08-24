@@ -73,6 +73,18 @@ Explore these interactive statistical learning concepts directly in your browser
 
 [📖 View Documentation](./stat312/Ridge%20and%20LASSO%20Geometry/README.md) | [💻 Run Locally](./stat312/Ridge%20and%20LASSO%20Geometry/ridge_lasso_geometry_marimo.py)
 
+#### 🧮 [Gaussian Classifiers: Naive Bayes, LDA & QDA](https://sjvrensburg.github.io/interactive-notebooks/stat312/Gaussian%20Classifiers/gaussian_classifiers_wasm/)
+
+**Compare Bayes-optimal, Naive Bayes, LDA and QDA decision boundaries on a 2-feature problem:**
+
+- 🎛️ Set two classes' population means and covariances (parametrised via σ and ρ for guaranteed PSD)
+- 📐 Inspect the exact theoretical Bayes decision boundary before any estimation
+- 🎲 Simulate a labelled sample and compare estimated Naive Bayes, LDA and QDA boundaries against the truth
+- 🔀 Toggle density contours, each method's boundary, and a shaded decision-region background
+- 📊 Compare out-of-sample accuracy of each method against the Bayes-optimal ceiling
+
+[📖 View Documentation](./stat312/Gaussian%20Classifiers/README.md) | [💻 Run Locally](./stat312/Gaussian%20Classifiers/gaussian_classifiers_marimo.py)
+
 ### STAT321: Linear Models and Time Series Analysis
 
 #### 📐 [OLS Geometry Explorer](https://sjvrensburg.github.io/interactive-notebooks/stat321/OLS%20Geometry/ols_geometry_wasm/)
@@ -205,9 +217,13 @@ interactive-notebooks/
 │   │   ├── kmeans_marimo.py             # K-Means evolution tutorial
 │   │   ├── kmeans_wasm/                 # WASM export for GitHub Pages
 │   │   └── README.md                    # Demo documentation
-│   └── Ridge and LASSO Geometry/
-│       ├── ridge_lasso_geometry_marimo.py # Ridge vs LASSO geometry explorer
-│       ├── ridge_lasso_geometry_wasm/     # WASM export for GitHub Pages
+│   ├── Ridge and LASSO Geometry/
+│   │   ├── ridge_lasso_geometry_marimo.py # Ridge vs LASSO geometry explorer
+│   │   ├── ridge_lasso_geometry_wasm/     # WASM export for GitHub Pages
+│   │   └── README.md                      # Demo documentation
+│   └── Gaussian Classifiers/
+│       ├── gaussian_classifiers_marimo.py # Naive Bayes, LDA & QDA explorer
+│       ├── gaussian_classifiers_wasm/     # WASM export for GitHub Pages
 │       └── README.md                      # Demo documentation
 ├── stat321/                              # STAT321: Linear Models and Time Series
 │   ├── OLS Geometry/
@@ -245,6 +261,7 @@ interactive-notebooks/
 - Bias-variance trade-off visualisation
 - Cross-validation and model evaluation
 - Decision boundary analysis
+- Bayes' theorem and probabilistic classification (Naive Bayes, LDA, QDA)
 
 ### STAT321: Linear Models and Time Series Analysis
 **Focus**: Geometric interpretation of linear regression
