@@ -138,7 +138,7 @@ def _(mo):
 
     prior1 = mo.ui.slider(0.1, 0.9, value=0.5, step=0.05, label="P(Y=1)")
 
-    _class0_table = mo.md(
+    class0_table = mo.md(
         f"""
         **Class 0**
 
@@ -151,7 +151,7 @@ def _(mo):
         | Correlation $\\rho$ | {rho0} |
         """
     )
-    _class1_table = mo.md(
+    class1_table = mo.md(
         f"""
         **Class 1**
 
@@ -164,27 +164,28 @@ def _(mo):
         | Correlation $\\rho$ | {rho1} |
         """
     )
-    _prior_md = mo.md(f"**Prior** $P(Y=1)$: {prior1}")
-    _tip_md = mo.md(
+    prior_md = mo.md(f"**Prior** $P(Y=1)$: {prior1}")
+    tip_md = mo.md(
         "*Tip: set Class 1's σ and ρ equal to Class 0's to satisfy the LDA "
         "equal-covariance assumption exactly; change them to see the true "
         "boundary curve away from a straight line.*"
     )
-
-    pop_controls = mo.vstack([_class0_table, _class1_table, _prior_md, _tip_md])
     return (
+        class0_table,
+        class1_table,
         mu0_1,
         mu0_2,
         mu1_1,
         mu1_2,
-        pop_controls,
         prior1,
+        prior_md,
         rho0,
         rho1,
         sigma0_1,
         sigma0_2,
         sigma1_1,
         sigma1_2,
+        tip_md,
     )
 
 
@@ -260,8 +261,8 @@ def _(Sigma0, Sigma1, mu0, mu1, np):
     _y_min = _means[:, 1].min() - 3.5 * _max_std - _pad
     _y_max = _means[:, 1].max() + 3.5 * _max_std + _pad
 
-    _xs = np.linspace(_x_min, _x_max, 150)
-    _ys = np.linspace(_y_min, _y_max, 150)
+    _xs = np.linspace(_x_min, _x_max, 90)
+    _ys = np.linspace(_y_min, _y_max, 90)
     xx, yy = np.meshgrid(_xs, _ys)
     grid_points = np.column_stack([xx.ravel(), yy.ravel()])
     return grid_points, xx, yy
@@ -272,12 +273,12 @@ def _(Sigma0, Sigma1, grid_points, mu0, mu1, multivariate_normal, np, prior0, pr
     _rv0 = multivariate_normal(mean=mu0, cov=Sigma0)
     _rv1 = multivariate_normal(mean=mu1, cov=Sigma1)
 
-    dens0 = _rv0.pdf(grid_points).reshape(xx.shape)
-    dens1 = _rv1.pdf(grid_points).reshape(xx.shape)
+    dens0 = np.round(_rv0.pdf(grid_points).reshape(xx.shape), 5)
+    dens1 = np.round(_rv1.pdf(grid_points).reshape(xx.shape), 5)
 
     _log_post0 = np.log(prior0) + _rv0.logpdf(grid_points)
     _log_post1 = np.log(prior1_val) + _rv1.logpdf(grid_points)
-    bayes_score = (_log_post1 - _log_post0).reshape(xx.shape)
+    bayes_score = np.round((_log_post1 - _log_post0).reshape(xx.shape), 3)
     return bayes_score, dens0, dens1
 
 
@@ -288,15 +289,13 @@ def _(mo):
         value=True, label="True Bayes decision boundary"
     )
 
-    theory_toggle_controls = mo.md(
-        f"""
-        **Display options**
-
-        {show_density_theory}
-
-        {show_bayes_boundary_theory}
-        """
-    )
+    theory_toggle_controls = mo.vstack([
+        mo.md("**Display options**"),
+        mo.hstack(
+            [show_density_theory, show_bayes_boundary_theory],
+            justify="start", gap=2, wrap=True,
+        ),
+    ])
     return show_bayes_boundary_theory, show_density_theory, theory_toggle_controls
 
 
@@ -405,6 +404,7 @@ def _(
     QuadraticDiscriminantAnalysis,
     X_train,
     grid_points,
+    np,
     xx,
     y_train,
 ):
@@ -417,9 +417,11 @@ def _(
     qda_model = QuadraticDiscriminantAnalysis()
     qda_model.fit(X_train, y_train)
 
-    nb_score = (nb_model.predict_proba(grid_points)[:, 1] - 0.5).reshape(xx.shape)
-    lda_score = lda_model.decision_function(grid_points).reshape(xx.shape)
-    qda_score = qda_model.decision_function(grid_points).reshape(xx.shape)
+    nb_score = np.round(
+        (nb_model.predict_proba(grid_points)[:, 1] - 0.5).reshape(xx.shape), 4
+    )
+    lda_score = np.round(lda_model.decision_function(grid_points).reshape(xx.shape), 3)
+    qda_score = np.round(qda_model.decision_function(grid_points).reshape(xx.shape), 3)
 
     return lda_model, lda_score, nb_model, nb_score, qda_model, qda_score
 
@@ -437,25 +439,14 @@ def _(mo):
         value="None", label="Shade decision regions for",
     )
 
-    cmp_toggle_controls = mo.md(
-        f"""
-        **Display options**
-
-        {show_points}
-
-        {show_density_cmp}
-
-        {show_bayes_cmp}
-
-        {show_nb}
-
-        {show_lda}
-
-        {show_qda}
-
-        {shade_select}
-        """
-    )
+    cmp_toggle_controls = mo.vstack([
+        mo.md("**Display options**"),
+        mo.hstack(
+            [show_points, show_density_cmp, show_bayes_cmp, show_nb, show_lda, show_qda],
+            justify="start", gap=2, wrap=True,
+        ),
+        shade_select,
+    ])
     return (
         cmp_toggle_controls,
         shade_select,
@@ -644,30 +635,30 @@ def _(
 @app.cell(hide_code=True)
 def _(
     acc_md,
+    class0_table,
+    class1_table,
     cmp_toggle_controls,
     cov_md,
     fig_cmp,
     fig_theory,
     mo,
-    pop_controls,
+    prior_md,
     sim_controls,
     theory_toggle_controls,
+    tip_md,
 ):
-    mo.hstack(
-        [
-            mo.vstack([
-                mo.md("### Population Parameters"),
-                pop_controls,
-                cov_md,
-            ]),
-            mo.ui.tabs({
-                "\U0001F4D0 Theoretical Boundary": mo.vstack([theory_toggle_controls, fig_theory]),
-                "\U0001F3B2 Simulated Comparison": mo.vstack([sim_controls, cmp_toggle_controls, fig_cmp]),
-                "\U0001F4CA Accuracy": acc_md,
-            }),
-        ],
-        widths=[1, 3],
-    )
+    mo.vstack([
+        mo.md("### Population Parameters"),
+        mo.hstack([class0_table, class1_table], justify="start", gap=3, wrap=True),
+        prior_md,
+        tip_md,
+        cov_md,
+        mo.ui.tabs({
+            "\U0001F4D0 Theoretical Boundary": mo.vstack([theory_toggle_controls, fig_theory]),
+            "\U0001F3B2 Simulated Comparison": mo.vstack([sim_controls, cmp_toggle_controls, fig_cmp]),
+            "\U0001F4CA Accuracy": acc_md,
+        }),
+    ])
     return
 
 
