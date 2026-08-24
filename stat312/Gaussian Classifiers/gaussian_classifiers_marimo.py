@@ -138,23 +138,40 @@ def _(mo):
 
     prior1 = mo.ui.slider(0.1, 0.9, value=0.5, step=0.05, label="P(Y=1)")
 
-    pop_controls = mo.md(
+    _class0_table = mo.md(
         f"""
-        | Parameter | Class 0 | Class 1 |
-        |:---|:---|:---|
-        | Mean $\\mu_1$ | {mu0_1} | {mu1_1} |
-        | Mean $\\mu_2$ | {mu0_2} | {mu1_2} |
-        | Std dev $\\sigma_1$ | {sigma0_1} | {sigma1_1} |
-        | Std dev $\\sigma_2$ | {sigma0_2} | {sigma1_2} |
-        | Correlation $\\rho$ | {rho0} | {rho1} |
+        **Class 0**
 
-        **Prior** $P(Y=1)$: {prior1}
-
-        *Tip: set Class 1's σ and ρ equal to Class 0's to satisfy the LDA
-        equal-covariance assumption exactly; change them to see the true
-        boundary curve away from a straight line.*
+        | Parameter | Value |
+        |:---|:---|
+        | Mean $\\mu_1$ | {mu0_1} |
+        | Mean $\\mu_2$ | {mu0_2} |
+        | Std dev $\\sigma_1$ | {sigma0_1} |
+        | Std dev $\\sigma_2$ | {sigma0_2} |
+        | Correlation $\\rho$ | {rho0} |
         """
     )
+    _class1_table = mo.md(
+        f"""
+        **Class 1**
+
+        | Parameter | Value |
+        |:---|:---|
+        | Mean $\\mu_1$ | {mu1_1} |
+        | Mean $\\mu_2$ | {mu1_2} |
+        | Std dev $\\sigma_1$ | {sigma1_1} |
+        | Std dev $\\sigma_2$ | {sigma1_2} |
+        | Correlation $\\rho$ | {rho1} |
+        """
+    )
+    _prior_md = mo.md(f"**Prior** $P(Y=1)$: {prior1}")
+    _tip_md = mo.md(
+        "*Tip: set Class 1's σ and ρ equal to Class 0's to satisfy the LDA "
+        "equal-covariance assumption exactly; change them to see the true "
+        "boundary curve away from a straight line.*"
+    )
+
+    pop_controls = mo.vstack([_class0_table, _class1_table, _prior_md, _tip_md])
     return (
         mu0_1,
         mu0_2,
