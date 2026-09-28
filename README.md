@@ -85,6 +85,18 @@ Explore these interactive statistical learning concepts directly in your browser
 
 [📖 View Documentation](./stat312/Gaussian%20Classifiers/README.md) | [💻 Run Locally](./stat312/Gaussian%20Classifiers/gaussian_classifiers_marimo.py)
 
+#### 🔄 [PCA as a Series of Rotations](https://sjvrensburg.github.io/interactive-notebooks/stat312/PCA%20Rotations/pca_rotations_wasm/)
+
+**Watch PCA turn a standardised 3D data cloud until its longest axes line up with the coordinate axes:**
+
+- 🎬 Step through three simple turns, pausing as each principal component is found
+- 🔁 Watch the points turn onto the axes, or the axes turn onto the cloud
+- 🧊 Covariance heatmap that starts as **R** and ends as diag(λ₁, λ₂, λ₃)
+- 📉 Optional final step that drops PC3 and reports the variance kept
+- ⚙️ Adjust the correlations and sample size
+
+[📖 View Documentation](./stat312/PCA%20Rotations/README.md) | [💻 Run Locally](./stat312/PCA%20Rotations/pca_rotations_marimo.py)
+
 ### STAT321: Linear Models and Time Series Analysis
 
 #### 📐 [OLS Geometry Explorer](https://sjvrensburg.github.io/interactive-notebooks/stat321/OLS%20Geometry/ols_geometry_wasm/)
@@ -221,10 +233,14 @@ interactive-notebooks/
 │   │   ├── ridge_lasso_geometry_marimo.py # Ridge vs LASSO geometry explorer
 │   │   ├── ridge_lasso_geometry_wasm/     # WASM export for GitHub Pages
 │   │   └── README.md                      # Demo documentation
-│   └── Gaussian Classifiers/
-│       ├── gaussian_classifiers_marimo.py # Naive Bayes, LDA & QDA explorer
-│       ├── gaussian_classifiers_wasm/     # WASM export for GitHub Pages
-│       └── README.md                      # Demo documentation
+│   ├── Gaussian Classifiers/
+│   │   ├── gaussian_classifiers_marimo.py # Naive Bayes, LDA & QDA explorer
+│   │   ├── gaussian_classifiers_wasm/     # WASM export for GitHub Pages
+│   │   └── README.md                      # Demo documentation
+│   └── PCA Rotations/
+│       ├── pca_rotations_marimo.py       # PCA as a series of rotations (animated)
+│       ├── pca_rotations_wasm/           # WASM export for GitHub Pages
+│       └── README.md                     # Demo documentation
 ├── stat321/                              # STAT321: Linear Models and Time Series
 │   ├── OLS Geometry/
 │   │   ├── ols_geometry_marimo.py        # OLS geometry explorer
@@ -258,6 +274,7 @@ interactive-notebooks/
 - Kernel density estimation
 - Kernel methods and bandwidth selection
 - K-Means clustering and unsupervised learning
+- Principal component analysis as a rotation
 - Bias-variance trade-off visualisation
 - Cross-validation and model evaluation
 - Decision boundary analysis
