@@ -73,6 +73,18 @@ Explore these interactive statistical learning concepts directly in your browser
 
 [📖 View Documentation](./stat312/Ridge%20and%20LASSO%20Geometry/README.md) | [💻 Run Locally](./stat312/Ridge%20and%20LASSO%20Geometry/ridge_lasso_geometry_marimo.py)
 
+#### 🧮 [Gaussian Classifiers: Naive Bayes, LDA & QDA](https://sjvrensburg.github.io/interactive-notebooks/stat312/Gaussian%20Classifiers/gaussian_classifiers_wasm/)
+
+**Compare Bayes-optimal, Naive Bayes, LDA and QDA decision boundaries on a 2-feature problem:**
+
+- 🎛️ Set two classes' population means and covariances (parametrised via σ and ρ for guaranteed PSD)
+- 📐 Inspect the exact theoretical Bayes decision boundary before any estimation
+- 🎲 Simulate a labelled sample and compare estimated Naive Bayes, LDA and QDA boundaries against the truth
+- 🔀 Toggle density contours, each method's boundary, and a shaded decision-region background
+- 📊 Compare out-of-sample accuracy of each method against the Bayes-optimal ceiling
+
+[📖 View Documentation](./stat312/Gaussian%20Classifiers/README.md) | [💻 Run Locally](./stat312/Gaussian%20Classifiers/gaussian_classifiers_marimo.py)
+
 #### 🔄 [PCA as a Series of Rotations](https://sjvrensburg.github.io/interactive-notebooks/stat312/PCA%20Rotations/pca_rotations_wasm/)
 
 **Watch PCA turn a standardised 3D data cloud until its longest axes line up with the coordinate axes:**
@@ -221,8 +233,12 @@ interactive-notebooks/
 │   │   ├── ridge_lasso_geometry_marimo.py # Ridge vs LASSO geometry explorer
 │   │   ├── ridge_lasso_geometry_wasm/     # WASM export for GitHub Pages
 │   │   └── README.md                      # Demo documentation
+│   ├── Gaussian Classifiers/
+│   │   ├── gaussian_classifiers_marimo.py # Naive Bayes, LDA & QDA explorer
+│   │   ├── gaussian_classifiers_wasm/     # WASM export for GitHub Pages
+│   │   └── README.md                      # Demo documentation
 │   └── PCA Rotations/
-│       ├── pca_rotations_marimo.py       # PCA as Givens rotations (animated)
+│       ├── pca_rotations_marimo.py       # PCA as a series of rotations (animated)
 │       ├── pca_rotations_wasm/           # WASM export for GitHub Pages
 │       └── README.md                     # Demo documentation
 ├── stat321/                              # STAT321: Linear Models and Time Series
@@ -262,6 +278,7 @@ interactive-notebooks/
 - Bias-variance trade-off visualisation
 - Cross-validation and model evaluation
 - Decision boundary analysis
+- Bayes' theorem and probabilistic classification (Naive Bayes, LDA, QDA)
 
 ### STAT321: Linear Models and Time Series Analysis
 **Focus**: Geometric interpretation of linear regression
