@@ -75,13 +75,13 @@ Explore these interactive statistical learning concepts directly in your browser
 
 #### 🔄 [PCA as a Series of Rotations](https://sjvrensburg.github.io/interactive-notebooks/stat312/PCA%20Rotations/pca_rotations_wasm/)
 
-**Watch PCA rotate a 3D data cloud onto its principal axes, one plane at a time:**
+**Watch PCA turn a standardised 3D data cloud until its longest axes line up with the coordinate axes:**
 
-- 🎬 Animated Plotly playback of V′ = G₃G₂G₁ as three Givens (plane) rotations, step by step or all at once
-- 🧊 Covariance heatmap whose off-diagonals vanish step by step, leaving diag(λ₁, λ₂, λ₃)
-- 🔁 Switch between rotating the data (active) and rotating the axes (passive)
-- 📉 Optional final step that drops PC3 and reports the variance retained
-- ⚙️ Adjust standard deviations, correlations, and sample size of the data
+- 🎬 Step through three simple turns, pausing as each principal component is found
+- 🔁 Watch the points turn onto the axes, or the axes turn onto the cloud
+- 🧊 Covariance heatmap that starts as **R** and ends as diag(λ₁, λ₂, λ₃)
+- 📉 Optional final step that drops PC3 and reports the variance kept
+- ⚙️ Adjust the correlations and sample size
 
 [📖 View Documentation](./stat312/PCA%20Rotations/README.md) | [💻 Run Locally](./stat312/PCA%20Rotations/pca_rotations_marimo.py)
 

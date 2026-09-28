@@ -37,46 +37,29 @@ def _(mo):
         r"""
         # PCA as a Series of Rotations
 
-        Principal component analysis finds an orthonormal basis
-        $\mathbf{v}_1, \mathbf{v}_2, \mathbf{v}_3$ — the eigenvectors of the
-        sample covariance matrix $\mathbf{S} = \mathbf{V}\boldsymbol{\Lambda}\mathbf{V}'$
-        — and re-expresses each centred observation in that basis:
+        Picture the standardised data as a cloud of points shaped like a
+        **rugby ball**. PCA finds the direction in which the ball is longest
+        (PC1), then the longest direction perpendicular to that (PC2), and
+        finally the remaining direction (PC3).
 
-        $$\mathbf{z}_i = \mathbf{V}'\mathbf{x}_i .$$
+        Finding the principal components is the same as **turning the cloud**
+        until its longest axis lies along the first coordinate axis, its next
+        longest along the second, and so on. After the turning, each point's
+        new coordinates are its **principal component scores**. The turning
+        does not stretch or squash the cloud, so no information is lost
+        until we choose to drop a component.
 
-        Because $\mathbf{V}$ is orthogonal (and we may choose the signs of the
-        eigenvectors so that $\det\mathbf{V} = +1$), the map
-        $\mathbf{x}\mapsto\mathbf{V}'\mathbf{x}$ is a **pure rotation**: no
-        stretching, no reflection, distances and total variance unchanged. Any
-        3D rotation can be built from three **plane (Givens) rotations**, so
-
-        $$\mathbf{V}' = \mathbf{G}_3\,\mathbf{G}_2\,\mathbf{G}_1 ,$$
-
-        | Step | Plane | Rotates about | Purpose |
-        |:---:|:---:|:---:|:---|
-        | $\mathbf{G}_1$ | $x$–$y$ | $z$-axis | swing $\mathbf{v}_1$ into the $x$–$z$ plane |
-        | $\mathbf{G}_2$ | $x$–$z$ | $y$-axis | tip $\mathbf{v}_1$ down onto the $x$-axis |
-        | $\mathbf{G}_3$ | $y$–$z$ | $x$-axis | spin about PC1 until $\mathbf{v}_2$ lies on the $y$-axis |
-
-        After the third rotation, $\mathbf{v}_3$ has nowhere left to go but the
-        $z$-axis. Watch the **covariance matrix** on the right: $\mathbf{G}_2$
-        clears the off-diagonals of the first row and column, $\mathbf{G}_3$
-        clears the last one, and what remains is
-        $\boldsymbol{\Lambda} = \operatorname{diag}(\lambda_1,\lambda_2,\lambda_3)$ —
-        the variances of the principal component scores.
-
-        Under the 3D plot, **⏭ Next step** plays one rotation and pauses so
-        you can see which principal component has just been identified;
-        **▶ Play all** runs straight through, and **⏮ Reset** returns to the
-        start. Drag to change the camera at any time — it is kept between
-        frames.
+        The animation does the turning in **three simple turns**, each about
+        one of the coordinate axes. Use **⏭ Next step** to go one turn at a
+        time, or **▶ Play all** to watch it straight through. Drag the plot
+        to look at the cloud from any angle.
         """
     )
     return
 
 
 # -------------------------------------------------------------------
-# Linear-algebra helpers
+# Rotation helpers (hidden from students)
 # -------------------------------------------------------------------
 @app.cell(hide_code=True)
 def _(np):
@@ -88,16 +71,16 @@ def _(np):
         G[j, i], G[j, j] = -s, c
         return G
 
-    # The three planes, in the order they are applied: (x,y), (x,z), (y,z).
+    # The three planes, in the order they are applied: (1,2), (1,3), (2,3),
+    # i.e. turns about the third, second and first axes.
     PLANES = [(0, 1), (0, 2), (1, 2)]
 
     def givens_angles(V):
         """Angles (θ₁, θ₂, θ₃) with G₃G₂G₁V = I, for V a rotation matrix.
 
-        This is QR by Givens rotations: each rotation zeros one entry below the
-        diagonal of V. Using atan2 keeps the diagonal positive, and since an
-        orthogonal upper-triangular matrix with det +1 and positive diagonal is
-        the identity, the three rotations together equal V'.
+        Each turn zeros one entry below the diagonal of V (QR by Givens
+        rotations). An orthogonal upper-triangular matrix with positive
+        diagonal and det +1 is the identity, so the turns together equal V'.
         """
         W = V.copy()
         angles = []
@@ -108,11 +91,11 @@ def _(np):
         return np.array(angles)
 
     def oriented_eigenbasis(S):
-        """Eigen-decomposition of S with the sign choice that rotates least.
+        """Eigen-decomposition of S with the sign choice that turns least.
 
-        Eigenvectors are only defined up to sign. We try each sign for v₁ and
-        v₂, set v₃ = v₁ × v₂ (so det V = +1, a proper rotation), and keep the
-        choice whose three Givens angles have the smallest total magnitude.
+        Eigenvectors are only defined up to sign. Try each sign for v₁ and
+        v₂, set v₃ = v₁ × v₂ (so V is a rotation, not a reflection), and keep
+        the choice whose three turning angles are smallest in total.
         """
         lam, V = np.linalg.eigh(S)
         order = np.argsort(lam)[::-1]
@@ -129,7 +112,7 @@ def _(np):
         return lam, best[1], best[2]
 
     def smoothstep(t):
-        """Ease-in/ease-out so each rotation starts and stops gently."""
+        """Ease-in/ease-out so each turn starts and stops gently."""
         return t * t * (3 - 2 * t)
 
     return PLANES, givens, oriented_eigenbasis, smoothstep
@@ -140,33 +123,33 @@ def _(np):
 # -------------------------------------------------------------------
 @app.cell(hide_code=True)
 def _(mo):
-    sd1 = mo.ui.slider(0.2, 3.0, value=2.0, step=0.1, label="SD of x")
-    sd2 = mo.ui.slider(0.2, 3.0, value=1.2, step=0.1, label="SD of y")
-    sd3 = mo.ui.slider(0.2, 3.0, value=1.0, step=0.1, label="SD of z")
-    r12 = mo.ui.slider(-0.95, 0.95, value=0.40, step=0.05, label="ρ(x, y)")
-    r13 = mo.ui.slider(-0.95, 0.95, value=-0.60, step=0.05, label="ρ(x, z)")
-    r23 = mo.ui.slider(-0.95, 0.95, value=-0.70, step=0.05, label="ρ(y, z)")
-    n_obs = mo.ui.slider(50, 500, value=250, step=50, label="n (observations)")
+    r12 = mo.ui.slider(-0.9, 0.9, value=0.5, step=0.1, label="Corr(Z₁, Z₂)")
+    r13 = mo.ui.slider(-0.9, 0.9, value=0.1, step=0.1, label="Corr(Z₁, Z₃)")
+    r23 = mo.ui.slider(-0.9, 0.9, value=0.6, step=0.1, label="Corr(Z₂, Z₃)")
+    n_obs = mo.ui.slider(50, 400, value=200, step=50, label="n")
 
     view = mo.ui.radio(
-        options=["Rotate the data", "Rotate the axes"],
-        value="Rotate the data",
-        label="Point of view",
+        options=["Rotate the points", "Rotate the axes"],
+        value="Rotate the points",
+        label="What turns?",
     )
-    project = mo.ui.checkbox(value=True, label="Finish by dropping PC3 (project onto PC1–PC2)")
-    n_frames = mo.ui.slider(10, 40, value=24, step=2, label="Frames per rotation")
-    speed = mo.ui.slider(20, 200, value=60, step=10, label="Frame duration (ms)")
-    return n_frames, n_obs, project, r12, r13, r23, sd1, sd2, sd3, speed, view
+    project = mo.ui.checkbox(value=True, label="Finish by dropping PC3")
+    speed = mo.ui.dropdown(
+        options={"Slow": 110, "Normal": 60, "Fast": 30},
+        value="Normal",
+        label="Speed",
+    )
+    return n_obs, project, r12, r13, r23, speed, view
 
 
 @app.cell(hide_code=True)
-def _(mo, n_frames, n_obs, project, r12, r13, r23, sd1, sd2, sd3, speed, view):
+def _(mo, n_obs, project, r12, r13, r23, speed, view):
     controls = mo.vstack(
         [
-            mo.md("**Population covariance**"),
-            sd1, sd2, sd3, r12, r13, r23, n_obs,
+            mo.md("**Correlations**"),
+            r12, r13, r23, n_obs,
             mo.md("**Animation**"),
-            view, project, n_frames, speed,
+            view, project, speed,
         ],
         gap=0.5,
     )
@@ -177,9 +160,8 @@ def _(mo, n_frames, n_obs, project, r12, r13, r23, sd1, sd2, sd3, speed, view):
 # Data and PCA
 # -------------------------------------------------------------------
 @app.cell(hide_code=True)
-def _(n_obs, np, oriented_eigenbasis, r12, r13, r23, sd1, sd2, sd3):
-    sds = np.array([sd1.value, sd2.value, sd3.value])
-    R = np.array(
+def _(n_obs, np, oriented_eigenbasis, r12, r13, r23):
+    R_pop = np.array(
         [
             [1.0, r12.value, r13.value],
             [r12.value, 1.0, r23.value],
@@ -187,85 +169,93 @@ def _(n_obs, np, oriented_eigenbasis, r12, r13, r23, sd1, sd2, sd3):
         ]
     )
 
-    # Not every triple of correlations is valid. If R is not positive
-    # definite, lift its smallest eigenvalues and rescale to unit diagonal.
-    r_eig, r_vec = np.linalg.eigh(R)
+    # Not every triple of correlations is possible. If this one is not, lift
+    # the smallest eigenvalues and rescale to the nearest valid matrix.
+    r_eig, r_vec = np.linalg.eigh(R_pop)
     corr_adjusted = bool(r_eig.min() < 0.02)
     if corr_adjusted:
-        R = r_vec @ np.diag(np.clip(r_eig, 0.02, None)) @ r_vec.T
-        d = np.sqrt(np.diag(R))
-        R = R / np.outer(d, d)
-    Sigma = np.outer(sds, sds) * R
+        R_pop = r_vec @ np.diag(np.clip(r_eig, 0.02, None)) @ r_vec.T
+        d = np.sqrt(np.diag(R_pop))
+        R_pop = R_pop / np.outer(d, d)
 
     rng = np.random.default_rng(2026)
-    X = rng.multivariate_normal(np.zeros(3), Sigma, size=n_obs.value)
-    X = X - X.mean(axis=0)
-    S = np.cov(X, rowvar=False)
+    raw = rng.multivariate_normal(np.zeros(3), R_pop, size=n_obs.value)
 
-    lam, V, angles = oriented_eigenbasis(S)
-    scores = X @ V
-    return R, S, V, X, angles, corr_adjusted, lam, scores
+    # Standardise, as in the notes: every column has mean 0 and SD 1, so the
+    # covariance matrix of Z is the sample correlation matrix R.
+    Z = (raw - raw.mean(axis=0)) / raw.std(axis=0, ddof=1)
+    R = np.cov(Z, rowvar=False)
+
+    lam, V, angles = oriented_eigenbasis(R)
+    scores = Z @ V
+    return R, V, Z, angles, corr_adjusted, lam, scores
 
 
 # -------------------------------------------------------------------
-# Rotation schedule: one cumulative rotation matrix per frame
+# Animation schedule: one cumulative rotation matrix per frame
 # -------------------------------------------------------------------
 @app.cell(hide_code=True)
-def _(PLANES, angles, givens, lam, n_frames, np, project, smoothstep, view):
-    AXIS_NAME = {(0, 1): "z", (0, 2): "y", (1, 2): "x"}
-    PLANE_NAME = {(0, 1): "x–y", (0, 2): "x–z", (1, 2): "y–z"}
-    HOLD = 8  # frames spent on each milestone when playing straight through
-
-    # Axis names as seen in the current coordinates: in the axes view the
-    # coordinate axes themselves are the ones that move, so they are primed.
-    ax = ["x", "y", "z"] if view.value == "Rotate the data" else ["x′", "y′", "z′"]
+def _(PLANES, angles, givens, lam, np, project, smoothstep, view):
+    N_FRAMES = 24  # frames per turn
+    HOLD = 8       # frames spent on each milestone when playing straight through
+    AXIS = {(0, 1): "Z₃", (0, 2): "Z₂", (1, 2): "Z₁"}
+    _rotate_points = view.value == "Rotate the points"
     _pve = 100 * lam / lam.sum()
 
-    # Each schedule entry: (M, squash, title). M is the cumulative rotation
-    # applied so far; squash ∈ [0, 1] shrinks the PC3 coordinate (projection).
-    # `stops` holds the frames where "Next step" pauses: the last frame of
-    # each milestone's hold, whose title says what has just been achieved.
+    if _rotate_points:
+        start = "Start: the standardised data on the original axes Z₁, Z₂, Z₃"
+        heads = [
+            f"Turn {_k + 1} of 3: turning the points about the {AXIS[_p]}-axis "
+            f"by {abs(np.degrees(_a)):.0f}°"
+            for _k, (_p, _a) in enumerate(zip(PLANES, angles))
+        ]
+        achieved = [
+            "After turn 1: PC1 now points the same way as Z₁, "
+            "just tilted up or down",
+            f"After turn 2: PC1 found — the longest axis of the cloud lies "
+            f"along Z₁ ({_pve[0]:.0f}% of the variance)",
+            f"After turn 3: PC2 and PC3 found — they lie along Z₂ and Z₃. "
+            f"The coordinates are now the PC scores",
+        ]
+    else:
+        start = "Start: the standardised data and the original axes Z₁, Z₂, Z₃"
+        heads = [
+            f"Turn {_k + 1} of 3: turning the axes by {abs(np.degrees(_a)):.0f}°"
+            for _k, _a in enumerate(angles)
+        ]
+        achieved = [
+            "After turn 1: the first axis now points the same way as PC1, "
+            "just tilted up or down",
+            f"After turn 2: PC1 found — the first axis lies along the longest "
+            f"axis of the cloud ({_pve[0]:.0f}% of the variance)",
+            "After turn 3: PC2 and PC3 found — the second and third axes lie "
+            "along them",
+        ]
+
+    # Each schedule entry: (M, squash, title). M is the turning applied so
+    # far; squash ∈ [0, 1] shrinks the PC3 coordinate (dropping PC3).
+    # `stops` holds the frames where "Next step" pauses.
     schedule = []
     stops = []
     _M = np.eye(3)
-    schedule += [(_M, 0.0, "Start: the centred data in the original x, y, z coordinates")] * HOLD
+    schedule += [(_M, 0.0, start)] * HOLD
     stops.append(len(schedule) - 1)
 
-    step_names = [
-        "swing PC1 into the x–z plane",
-        "tip PC1 down onto the x-axis",
-        "spin about PC1 until PC2 lies on the y-axis",
-    ]
-    achieved = [
-        f"After G1: PC1 now lies in the {ax[0]}–{ax[2]} plane (its {ax[1]}-component is zero)",
-        f"After G2: PC1 identified — it lies along the {ax[0]}-axis "
-        f"(λ₁ = {lam[0]:.2f}, {_pve[0]:.1f}% of the variance)",
-        f"After G3: PC2 and PC3 identified — along the {ax[1]}- and {ax[2]}-axes "
-        f"(λ₂ = {lam[1]:.2f}, λ₃ = {lam[2]:.2f}); G3·G2·G1 = V′",
-    ]
     for _k, ((_i, _j), _theta) in enumerate(zip(PLANES, angles)):
-        _head = (
-            f"Step {_k + 1}: G{_k + 1} rotates in the {PLANE_NAME[(_i, _j)]} plane "
-            f"(about the {AXIS_NAME[(_i, _j)]}-axis) by {np.degrees(_theta):+.1f}° — "
-            f"{step_names[_k]}"
-        )
-        for _t in np.linspace(0, 1, n_frames.value + 1)[1:]:
-            schedule.append((givens(_i, _j, smoothstep(_t) * _theta) @ _M, 0.0, _head))
+        for _t in np.linspace(0, 1, N_FRAMES + 1)[1:]:
+            schedule.append((givens(_i, _j, smoothstep(_t) * _theta) @ _M, 0.0, heads[_k]))
         _M = givens(_i, _j, _theta) @ _M
         schedule += [(_M, 0.0, achieved[_k])] * HOLD
         stops.append(len(schedule) - 1)
 
-    do_project = project.value and view.value == "Rotate the data"
-    if do_project:
-        kept = 100 * lam[:2].sum() / lam.sum()
-        proj_head = "Step 4: drop PC3 — project onto the PC1–PC2 plane"
-        for _t in np.linspace(0, 1, n_frames.value + 1)[1:]:
-            schedule.append((_M, smoothstep(_t), proj_head))
+    if project.value and _rotate_points:
+        kept = _pve[:2].sum()
+        for _t in np.linspace(0, 1, N_FRAMES + 1)[1:]:
+            schedule.append((_M, smoothstep(_t), "Dropping PC3: flattening the cloud onto the PC1–PC2 plane"))
         schedule += [
-            (_M, 1.0, f"After projection: PC3 dropped — {kept:.1f}% of the variance retained")
+            (_M, 1.0, f"PC3 dropped: PC1 and PC2 keep {kept:.0f}% of the variance")
         ] * HOLD
         stops.append(len(schedule) - 1)
-
     return schedule, stops
 
 
@@ -273,16 +263,16 @@ def _(PLANES, angles, givens, lam, n_frames, np, project, smoothstep, view):
 # Figure
 # -------------------------------------------------------------------
 @app.cell(hide_code=True)
-def _(S, V, X, go, html, json, lam, make_subplots, mo, np, schedule, scores, speed, stops, view):
-    rotate_data = view.value == "Rotate the data"
+def _(R, V, Z, go, html, json, lam, make_subplots, mo, np, schedule, scores, speed, stops, view):
+    rotate_points = view.value == "Rotate the points"
     PC_COLOURS = ["#d62728", "#2ca02c", "#1f77b4"]
     AXIS_COLOUR = "#555555"
-    # Rotations preserve each point's distance from the origin, so a cube
-    # enclosing the largest norm keeps every frame inside the same box.
-    reach = 1.05 * np.linalg.norm(X, axis=1).max()
+    labels = ["Z₁", "Z₂", "Z₃"]
+    # Turning preserves each point's distance from the origin, so a cube
+    # enclosing the furthest point keeps every frame inside the same box.
+    reach = 1.05 * np.linalg.norm(Z, axis=1).max()
     arrow_len = [2.2 * np.sqrt(l) for l in lam]
-    cmax = np.abs(S).max()
-    labels = ["x", "y", "z"]
+    cmax = np.abs(R).max()
 
     def segment(vec, length):
         p = np.round(vec * length, 4)
@@ -292,16 +282,16 @@ def _(S, V, X, go, html, json, lam, make_subplots, mo, np, schedule, scores, spe
         """Traces that change from frame to frame, in a fixed order:
         points, three moving arrows, covariance heatmap."""
         P = np.diag([1.0, 1.0, 1.0 - squash])
-        if rotate_data:
-            pts = X @ M.T @ P               # active: move every point
-            moving = [M @ V[:, _k] for _k in range(3)]   # PC directions travel with the data
+        if rotate_points:
+            pts = Z @ M.T @ P                             # every point turns
+            moving = [M @ V[:, _k] for _k in range(3)]    # PCs turn with the points
             lens = arrow_len
         else:
-            pts = X                         # passive: the data stay put
-            moving = [M.T[:, _k] for _k in range(3)]     # the coordinate axes travel instead
+            pts = Z                                       # the points stay put
+            moving = [M.T[:, _k] for _k in range(3)]      # the axes turn instead
             lens = [reach / 1.05] * 3
         pts = np.round(pts, 4)
-        cov = P @ M @ S @ M.T @ P
+        cov = P @ M @ R @ M.T @ P
         out = [go.Scatter3d(x=pts[:, 0], y=pts[:, 1], z=pts[:, 2])]
         for _k in range(3):
             xs, ys, zs = segment(moving[_k], lens[_k])
@@ -317,26 +307,33 @@ def _(S, V, X, go, html, json, lam, make_subplots, mo, np, schedule, scores, spe
     fig = make_subplots(
         rows=1,
         cols=2,
-        column_widths=[0.70, 0.30],
+        column_widths=[0.75, 0.25],
         specs=[[{"type": "scene"}, {"type": "heatmap"}]],
-        subplot_titles=("", "Covariance of the current coordinates"),
-        horizontal_spacing=0.04,
+        horizontal_spacing=0.03,
+    )
+
+    # Heatmap title placed inside the plot area so long captions above the
+    # figure never run into it.
+    fig.add_annotation(
+        text="Covariance matrix of the<br>current coordinates",
+        x=0.885, y=0.93, xref="paper", yref="paper",
+        xanchor="center", yanchor="bottom", showarrow=False, font=dict(size=14),
     )
 
     M0, sq0, title0 = schedule[0]
     first = frame_traces(M0, sq0)
 
-    # Points, coloured by PC1 score so individual points can be tracked.
+    # Points, coloured by PC1 score so individual points can be followed.
     fig.add_trace(
         go.Scatter3d(
             x=first[0].x, y=first[0].y, z=first[0].z,
             mode="markers",
             marker=dict(
-                size=3,
+                size=3.5,
                 color=scores[:, 0],
                 colorscale="Viridis",
-                opacity=0.8,
-                colorbar=dict(title="PC1<br>score", x=0.0, len=0.6, thickness=12),
+                opacity=0.85,
+                colorbar=dict(title="PC1<br>score", x=0.0, len=0.55, thickness=12),
             ),
             name="observations",
             hovertemplate="(%{x:.2f}, %{y:.2f}, %{z:.2f})<extra></extra>",
@@ -344,37 +341,37 @@ def _(S, V, X, go, html, json, lam, make_subplots, mo, np, schedule, scores, spe
         row=1, col=1,
     )
 
-    # Moving arrows: PCs (data view) or the coordinate axes (axes view).
+    # Moving arrows: the PCs (points view) or the coordinate axes (axes view).
     for _k in range(3):
-        name = f"PC{_k + 1}" if rotate_data else f"{labels[_k]}′ axis"
+        name = f"PC{_k + 1}" if rotate_points else labels[_k]
+        colour = PC_COLOURS[_k] if rotate_points else AXIS_COLOUR
         fig.add_trace(
             go.Scatter3d(
                 x=first[_k + 1].x, y=first[_k + 1].y, z=first[_k + 1].z,
                 mode="lines+text",
-                line=dict(color=PC_COLOURS[_k] if rotate_data else AXIS_COLOUR, width=8),
-                text=["", name.replace(" axis", "")],
-                textfont=dict(size=14, color=PC_COLOURS[_k] if rotate_data else AXIS_COLOUR),
-                name=name,
+                line=dict(color=colour, width=8),
+                text=["", name],
+                textfont=dict(size=15, color=colour),
+                name=name if rotate_points else f"{name} axis (turns)",
                 hoverinfo="skip",
             ),
             row=1, col=1,
         )
 
-    # Static targets: the fixed axes (data view) or the fixed PCs (axes view).
+    # Dashed targets: where the moving arrows will end up.
     for _k in range(3):
-        if rotate_data:
-            vec, length, colour, name = np.eye(3)[_k], reach / 1.05, AXIS_COLOUR, f"{labels[_k]}-axis"
+        if rotate_points:
+            vec, length, colour, name = np.eye(3)[_k], reach / 1.05, AXIS_COLOUR, labels[_k]
         else:
-            vec, length, colour, name = V[:, _k], arrow_len[_k], PC_COLOURS[_k], f"PC{_k + 1}"
+            vec, length, colour, name = V[:, _k], 0.85 * reach, PC_COLOURS[_k], f"PC{_k + 1}"
         xs, ys, zs = segment(vec, length)
         fig.add_trace(
             go.Scatter3d(
                 x=xs, y=ys, z=zs,
                 mode="lines+text",
                 line=dict(color=colour, width=4, dash="dash"),
-                text=["", name.replace("-axis", "")],
-                textfont=dict(size=12, color=colour),
-                name=f"{name} (target)",
+                text=["", name],
+                textfont=dict(size=13, color=colour),
                 opacity=0.6,
                 showlegend=False,
                 hoverinfo="skip",
@@ -395,7 +392,7 @@ def _(S, V, X, go, html, json, lam, make_subplots, mo, np, schedule, scores, spe
             zmin=-cmax,
             zmax=cmax,
             showscale=False,
-            hovertemplate="Cov(%{y}, %{x}) = %{z:.3f}<extra></extra>",
+            hovertemplate="Cov(%{y}, %{x}) = %{z:.2f}<extra></extra>",
         ),
         row=1, col=2,
     )
@@ -404,11 +401,10 @@ def _(S, V, X, go, html, json, lam, make_subplots, mo, np, schedule, scores, spe
     MOVING = [0, 1, 2, 3, 7]
     frames = []
     for _idx, (_M, _sq, _title) in enumerate(schedule):
-        tr = frame_traces(_M, _sq)
         frames.append(
             go.Frame(
                 name=str(_idx),
-                data=tr,
+                data=frame_traces(_M, _sq),
                 traces=MOVING,
                 layout=go.Layout(title_text=_title),
             )
@@ -422,26 +418,26 @@ def _(S, V, X, go, html, json, lam, make_subplots, mo, np, schedule, scores, spe
         mode="immediate",
     )
     fig.update_layout(
-        title=dict(text=title0, x=0.02, font=dict(size=16)),
-        height=680,
-        margin=dict(l=10, r=10, t=70, b=110),
+        title=dict(text=title0, x=0.02, font=dict(size=17)),
+        height=760,
+        margin=dict(l=10, r=10, t=60, b=110),
         uirevision="pca-rotations",
-        legend=dict(orientation="h", x=0.72, y=-0.02, xanchor="left", yanchor="top", font=dict(size=11)),
+        legend=dict(x=0.80, y=0.28, xanchor="left", yanchor="top", font=dict(size=12)),
         scene=dict(
-            xaxis=dict(range=[-reach, reach], title="x"),
-            yaxis=dict(range=[-reach, reach], title="y"),
-            zaxis=dict(range=[-reach, reach], title="z"),
+            xaxis=dict(range=[-reach, reach], title="Z₁"),
+            yaxis=dict(range=[-reach, reach], title="Z₂"),
+            zaxis=dict(range=[-reach, reach], title="Z₃"),
             aspectmode="cube",
-            camera=dict(eye=dict(x=1.45, y=1.25, z=0.85)),
-            domain=dict(x=[0.07, 0.68], y=[0.0, 1.0]),
+            camera=dict(eye=dict(x=1.3, y=1.1, z=0.75)),
+            domain=dict(x=[0.06, 0.74], y=[0.0, 1.0]),
         ),
         xaxis=dict(side="top", scaleanchor="y", constrain="domain"),
-        yaxis=dict(constrain="domain"),
+        yaxis=dict(constrain="domain", domain=[0.35, 0.9]),
         updatemenus=[
             dict(
                 type="buttons",
                 direction="left",
-                x=0.07,
+                x=0.06,
                 y=-0.01,
                 xanchor="left",
                 yanchor="top",
@@ -468,9 +464,9 @@ def _(S, V, X, go, html, json, lam, make_subplots, mo, np, schedule, scores, spe
         sliders=[
             dict(
                 active=0,
-                x=0.07,
-                y=-0.09,
-                len=0.61,
+                x=0.06,
+                y=-0.08,
+                len=0.68,
                 yanchor="top",
                 pad=dict(t=0),
                 currentvalue=dict(visible=False),
@@ -489,10 +485,7 @@ def _(S, V, X, go, html, json, lam, make_subplots, mo, np, schedule, scores, spe
             )
         ],
     )
-    # Marimo's Plotly renderer updates traces in place but keeps the old
-    # animation frames, so render into an iframe to get a fresh figure (and
-    # fresh frames) whenever a control changes. A fixed-height srcdoc iframe
-    # is used because mo.iframe auto-resizes to the page and overshoots.
+
     # "Next step": play from the current frame to the next milestone, then
     # stop. Plotly reports each frame it shows, so the position stays in sync
     # with the slider, Play all, Pause and Reset.
@@ -523,155 +516,91 @@ def _(S, V, X, go, html, json, lam, make_subplots, mo, np, schedule, scores, spe
         .replace("N_FRAMES", str(len(schedule)))
         .replace("DURATION", str(speed.value))
     )
+
+    # Marimo's Plotly renderer updates traces in place but keeps the old
+    # animation frames, so render into an iframe to get a fresh figure (and
+    # fresh frames) whenever a control changes. A fixed-height srcdoc iframe
+    # is used because mo.iframe auto-resizes to the page and overshoots.
     page = fig.to_html(
         post_script=next_step_js,
         include_plotlyjs="cdn",
         full_html=True,
         auto_play=False,
-        config={"displaylogo": False},
+        config={"displayModeBar": False},
         default_width="100%",
-        default_height="680px",
+        default_height="760px",
     )
     pca_fig = mo.Html(
         f'<iframe srcdoc="{html.escape(page, quote=True)}" '
-        'style="width:100%;height:700px;border:0;"></iframe>'
+        'style="width:100%;height:780px;border:0;"></iframe>'
     )
     return (pca_fig,)
 
 
 # -------------------------------------------------------------------
-# Numerical summary
+# What to notice
 # -------------------------------------------------------------------
 @app.cell(hide_code=True)
-def _(R, S, V, angles, corr_adjusted, lam, mo, np):
-    def mat(A):
-        rows = r" \\ ".join(" & ".join(f"{v:.3f}" for v in row) for row in A)
-        return r"\begin{pmatrix}" + rows + r"\end{pmatrix}"
-
-    pve = 100 * lam / lam.sum()
+def _(V, corr_adjusted, lam, mo, np):
+    _pve = 100 * lam / lam.sum()
+    _cum = np.cumsum(_pve)
     warn = (
         mo.callout(
             mo.md(
-                "The chosen correlations do not form a valid correlation matrix "
-                "(it is not positive definite), so the nearest valid one was used:\n\n"
-                + f"$$\\mathbf{{R}} = {mat(R)}$$"
+                "These three correlations cannot all occur together, so the "
+                "closest possible set of correlations was used instead."
             ),
             kind="warn",
         )
         if corr_adjusted
         else mo.md("")
     )
-    summary = mo.vstack(
-        [
-            warn,
-            mo.md(
-                rf"""
-                ### The numbers behind the animation
+    notice = mo.md(
+        rf"""
+        ### What to notice
 
-                $$\mathbf{{S}} = {mat(S)}
-                \qquad
-                \mathbf{{V}} = {mat(V)}$$
-
-                with $\det\mathbf{{V}} = {np.linalg.det(V):+.3f}$ (a proper rotation).
-
-                | | PC1 | PC2 | PC3 |
-                |---|---:|---:|---:|
-                | Eigenvalue $\lambda_k$ | {lam[0]:.3f} | {lam[1]:.3f} | {lam[2]:.3f} |
-                | % of variance | {pve[0]:.1f}% | {pve[1]:.1f}% | {pve[2]:.1f}% |
-
-                **Rotation angles:**
-                $\theta_1 = {np.degrees(angles[0]):+.1f}^\circ$ (about $z$),
-                $\theta_2 = {np.degrees(angles[1]):+.1f}^\circ$ (about $y$),
-                $\theta_3 = {np.degrees(angles[2]):+.1f}^\circ$ (about $x$).
-
-                The trace is preserved by every rotation:
-                $\operatorname{{tr}}\mathbf{{S}} = {np.trace(S):.3f}
-                = \lambda_1+\lambda_2+\lambda_3$.
-                """
-            ),
-        ]
+        - **Turning only.** The cloud is never stretched or squashed, so the
+          total variance stays the same throughout:
+          $\lambda_1 + \lambda_2 + \lambda_3 = {lam.sum():.2f} = p$.
+        - **The heatmap starts as the correlation matrix $\mathbf{{R}}$.** As
+          the turns happen, the off-diagonal entries shrink to zero: the
+          principal components are **uncorrelated**.
+        - **The diagonal ends as the eigenvalues.** The variance along each
+          principal component is its eigenvalue, $\operatorname{{Var}}(\text{{PC}}_j) = \lambda_j$.
+        - **Dropping PC3** removes only the smallest variance, so PC1 and PC2
+          still keep {_cum[1]:.0f}% of it.
+        """
     )
+    table = mo.md(
+        rf"""
+        ### The principal components
+
+        | | PC1 | PC2 | PC3 |
+        |---|---:|---:|---:|
+        | Eigenvalue $\lambda_j$ | {lam[0]:.2f} | {lam[1]:.2f} | {lam[2]:.2f} |
+        | Proportion of variance | {_pve[0]:.1f}% | {_pve[1]:.1f}% | {_pve[2]:.1f}% |
+        | Cumulative proportion | {_cum[0]:.1f}% | {_cum[1]:.1f}% | {_cum[2]:.1f}% |
+        | Weight on $Z_1$ | {V[0, 0]:.2f} | {V[0, 1]:.2f} | {V[0, 2]:.2f} |
+        | Weight on $Z_2$ | {V[1, 0]:.2f} | {V[1, 1]:.2f} | {V[1, 2]:.2f} |
+        | Weight on $Z_3$ | {V[2, 0]:.2f} | {V[2, 1]:.2f} | {V[2, 2]:.2f} |
+
+        The weights are the eigenvectors $\mathbf{{v}}_j$: the direction of
+        each coloured arrow in the plot.
+        """
+    )
+    summary = mo.vstack([warn, mo.hstack([notice, table], widths=[1, 1], align="start", gap=2)])
     return (summary,)
-
-
-@app.cell(hide_code=True)
-def _(mo):
-    notes = mo.accordion(
-        {
-            "Why can the eigenvector signs be flipped?": mo.md(
-                r"""
-                If $\mathbf{S}\mathbf{v} = \lambda\mathbf{v}$ then also
-                $\mathbf{S}(-\mathbf{v}) = \lambda(-\mathbf{v})$, so each principal
-                direction is only defined up to sign. Flipping a sign just mirrors
-                that component's scores. The notebook tries the four sign choices
-                for $\mathbf{v}_1,\mathbf{v}_2$, sets
-                $\mathbf{v}_3 = \mathbf{v}_1\times\mathbf{v}_2$ so that
-                $\det\mathbf{V} = +1$ (a rotation rather than a reflection), and
-                keeps whichever needs the **smallest total turning**.
-                """
-            ),
-            "How are the three angles found?": mo.md(
-                r"""
-                Apply Givens rotations to $\mathbf{V}$ to zero its entries below
-                the diagonal, one at a time — the same idea as a QR decomposition:
-
-                1. $\theta_1 = \operatorname{atan2}(V_{21}, V_{11})$ zeros $V_{21}$ — PC1 now has no $y$-component.
-                2. $\theta_2 = \operatorname{atan2}(V_{31}, V_{11})$ zeros $V_{31}$ — PC1 now points along $x$.
-                3. $\theta_3 = \operatorname{atan2}(V_{32}, V_{22})$ zeros $V_{32}$ — PC2 now points along $y$.
-
-                The result $\mathbf{G}_3\mathbf{G}_2\mathbf{G}_1\mathbf{V}$ is
-                orthogonal, upper triangular, with positive diagonal and
-                determinant $+1$ — which forces it to be $\mathbf{I}$. Hence
-                $\mathbf{G}_3\mathbf{G}_2\mathbf{G}_1 = \mathbf{V}'$.
-                These are a form of **Euler angles**.
-                """
-            ),
-            "Rotating the data vs rotating the axes": mo.md(
-                r"""
-                *Rotate the data* (active view): the axes stay fixed and every
-                point moves, $\mathbf{x}_i \mapsto \mathbf{M}\mathbf{x}_i$, until
-                the cloud lines up with $x$, $y$, $z$.
-
-                *Rotate the axes* (passive view): the cloud stays still and the
-                coordinate axes turn, $\mathbf{e}_k \mapsto \mathbf{M}'\mathbf{e}_k$,
-                until they land on $\mathbf{v}_1, \mathbf{v}_2, \mathbf{v}_3$.
-
-                Both describe the same coordinates $\mathbf{M}\mathbf{x}_i$, which
-                is why the covariance panel is identical in the two views. PCA is
-                usually thought of passively — choosing better axes — but the
-                active view makes the "diagonalising" visible.
-                """
-            ),
-            "Why does the covariance become diagonal?": mo.md(
-                r"""
-                If $\mathbf{z} = \mathbf{M}\mathbf{x}$ then
-                $\operatorname{Cov}(\mathbf{z}) = \mathbf{M}\mathbf{S}\mathbf{M}'$.
-                With $\mathbf{M} = \mathbf{V}'$ this is
-                $\mathbf{V}'\mathbf{V}\boldsymbol{\Lambda}\mathbf{V}'\mathbf{V} = \boldsymbol{\Lambda}$:
-                the principal component scores are **uncorrelated**, with variances
-                $\lambda_1 \ge \lambda_2 \ge \lambda_3$. Dropping PC3 discards the
-                direction with the least variance, keeping a fraction
-                $(\lambda_1+\lambda_2)/(\lambda_1+\lambda_2+\lambda_3)$ of the total.
-                """
-            ),
-        }
-    )
-    return (notes,)
 
 
 # -------------------------------------------------------------------
 # Layout
 # -------------------------------------------------------------------
 @app.cell(hide_code=True)
-def _(controls, mo, notes, pca_fig, summary):
+def _(controls, mo, pca_fig, summary):
     mo.vstack(
         [
-            mo.hstack(
-                [mo.vstack([mo.md("### Parameters"), controls]), pca_fig],
-                widths=[1, 4],
-                align="start",
-            ),
-            mo.hstack([summary, notes], widths=[1, 1], align="start", gap=2),
+            mo.hstack([controls, pca_fig], widths=[1.3, 6], align="start"),
+            summary,
         ],
         gap=1,
     )
