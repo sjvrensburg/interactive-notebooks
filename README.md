@@ -77,7 +77,7 @@ Explore these interactive statistical learning concepts directly in your browser
 
 **Watch PCA rotate a 3D data cloud onto its principal axes, one plane at a time:**
 
-- 🎬 Animated Plotly playback of V′ = G₃G₂G₁ as three Givens (plane) rotations
+- 🎬 Animated Plotly playback of V′ = G₃G₂G₁ as three Givens (plane) rotations, step by step or all at once
 - 🧊 Covariance heatmap whose off-diagonals vanish step by step, leaving diag(λ₁, λ₂, λ₃)
 - 🔁 Switch between rotating the data (active) and rotating the axes (passive)
 - 📉 Optional final step that drops PC3 and reports the variance retained

@@ -19,12 +19,13 @@ app = marimo.App(width="full", app_title="PCA as Rotations")
 @app.cell(hide_code=True)
 def _():
     import html
+    import json
 
     import marimo as mo
     import numpy as np
     import plotly.graph_objects as go
     from plotly.subplots import make_subplots
-    return go, html, make_subplots, mo, np
+    return go, html, json, make_subplots, mo, np
 
 
 # -------------------------------------------------------------------
@@ -64,8 +65,11 @@ def _(mo):
         $\boldsymbol{\Lambda} = \operatorname{diag}(\lambda_1,\lambda_2,\lambda_3)$ —
         the variances of the principal component scores.
 
-        Press **▶ Play** under the 3D plot (drag to change the camera at any
-        time — it is kept between frames).
+        Under the 3D plot, **⏭ Next step** plays one rotation and pauses so
+        you can see which principal component has just been identified;
+        **▶ Play all** runs straight through, and **⏮ Reset** returns to the
+        start. Drag to change the camera at any time — it is kept between
+        frames.
         """
     )
     return
@@ -210,18 +214,34 @@ def _(n_obs, np, oriented_eigenbasis, r12, r13, r23, sd1, sd2, sd3):
 def _(PLANES, angles, givens, lam, n_frames, np, project, smoothstep, view):
     AXIS_NAME = {(0, 1): "z", (0, 2): "y", (1, 2): "x"}
     PLANE_NAME = {(0, 1): "x–y", (0, 2): "x–z", (1, 2): "y–z"}
-    HOLD = 8  # frames to pause on at each milestone
+    HOLD = 8  # frames spent on each milestone when playing straight through
+
+    # Axis names as seen in the current coordinates: in the axes view the
+    # coordinate axes themselves are the ones that move, so they are primed.
+    ax = ["x", "y", "z"] if view.value == "Rotate the data" else ["x′", "y′", "z′"]
+    _pve = 100 * lam / lam.sum()
 
     # Each schedule entry: (M, squash, title). M is the cumulative rotation
     # applied so far; squash ∈ [0, 1] shrinks the PC3 coordinate (projection).
+    # `stops` holds the frames where "Next step" pauses: the last frame of
+    # each milestone's hold, whose title says what has just been achieved.
     schedule = []
+    stops = []
     _M = np.eye(3)
     schedule += [(_M, 0.0, "Start: the centred data in the original x, y, z coordinates")] * HOLD
+    stops.append(len(schedule) - 1)
 
     step_names = [
         "swing PC1 into the x–z plane",
         "tip PC1 down onto the x-axis",
         "spin about PC1 until PC2 lies on the y-axis",
+    ]
+    achieved = [
+        f"After G1: PC1 now lies in the {ax[0]}–{ax[2]} plane (its {ax[1]}-component is zero)",
+        f"After G2: PC1 identified — it lies along the {ax[0]}-axis "
+        f"(λ₁ = {lam[0]:.2f}, {_pve[0]:.1f}% of the variance)",
+        f"After G3: PC2 and PC3 identified — along the {ax[1]}- and {ax[2]}-axes "
+        f"(λ₂ = {lam[1]:.2f}, λ₃ = {lam[2]:.2f}); G3·G2·G1 = V′",
     ]
     for _k, ((_i, _j), _theta) in enumerate(zip(PLANES, angles)):
         _head = (
@@ -232,38 +252,28 @@ def _(PLANES, angles, givens, lam, n_frames, np, project, smoothstep, view):
         for _t in np.linspace(0, 1, n_frames.value + 1)[1:]:
             schedule.append((givens(_i, _j, smoothstep(_t) * _theta) @ _M, 0.0, _head))
         _M = givens(_i, _j, _theta) @ _M
-        schedule += [(_M, 0.0, _head)] * HOLD
-
-    done = "Done: G3·G2·G1 = V′ — the coordinates are now the principal component scores"
-    schedule += [(_M, 0.0, done)] * HOLD
+        schedule += [(_M, 0.0, achieved[_k])] * HOLD
+        stops.append(len(schedule) - 1)
 
     do_project = project.value and view.value == "Rotate the data"
     if do_project:
         kept = 100 * lam[:2].sum() / lam.sum()
-        proj_head = (
-            f"Step 4: drop PC3 — project onto the PC1–PC2 plane "
-            f"({kept:.1f}% of the variance retained)"
-        )
+        proj_head = "Step 4: drop PC3 — project onto the PC1–PC2 plane"
         for _t in np.linspace(0, 1, n_frames.value + 1)[1:]:
             schedule.append((_M, smoothstep(_t), proj_head))
-        schedule += [(_M, 1.0, proj_head)] * HOLD
+        schedule += [
+            (_M, 1.0, f"After projection: PC3 dropped — {kept:.1f}% of the variance retained")
+        ] * HOLD
+        stops.append(len(schedule) - 1)
 
-    milestones = {
-        "Start": 0,
-        "G₁": HOLD + n_frames.value,
-        "G₂": HOLD + 2 * n_frames.value + HOLD,
-        "G₃": HOLD + 3 * n_frames.value + 2 * HOLD,
-    }
-    if do_project:
-        milestones["Project"] = len(schedule) - 1
-    return milestones, schedule
+    return schedule, stops
 
 
 # -------------------------------------------------------------------
 # Figure
 # -------------------------------------------------------------------
 @app.cell(hide_code=True)
-def _(S, V, X, go, html, lam, make_subplots, milestones, mo, np, schedule, scores, speed, view):
+def _(S, V, X, go, html, json, lam, make_subplots, mo, np, schedule, scores, speed, stops, view):
     rotate_data = view.value == "Rotate the data"
     PC_COLOURS = ["#d62728", "#2ca02c", "#1f77b4"]
     AXIS_COLOUR = "#555555"
@@ -411,11 +421,10 @@ def _(S, V, X, go, html, lam, make_subplots, milestones, mo, np, schedule, score
         fromcurrent=True,
         mode="immediate",
     )
-    milestone_at = {idx: label for label, idx in milestones.items()}
     fig.update_layout(
         title=dict(text=title0, x=0.02, font=dict(size=16)),
         height=680,
-        margin=dict(l=10, r=10, t=70, b=70),
+        margin=dict(l=10, r=10, t=70, b=110),
         uirevision="pca-rotations",
         legend=dict(orientation="h", x=0.72, y=-0.02, xanchor="left", yanchor="top", font=dict(size=11)),
         scene=dict(
@@ -432,18 +441,26 @@ def _(S, V, X, go, html, lam, make_subplots, milestones, mo, np, schedule, score
             dict(
                 type="buttons",
                 direction="left",
-                x=0.0,
-                y=-0.02,
+                x=0.07,
+                y=-0.01,
                 xanchor="left",
                 yanchor="top",
                 pad=dict(t=0, r=10),
                 showactive=False,
                 buttons=[
-                    dict(label="▶ Play", method="animate", args=[None, play_args]),
+                    # "skip" does nothing in Plotly itself; the script added
+                    # below catches the click and plays up to the next stop.
+                    dict(label="⏭ Next step", method="skip", args=[None]),
+                    dict(label="▶ Play all", method="animate", args=[None, play_args]),
                     dict(
                         label="❚❚ Pause",
                         method="animate",
                         args=[[None], dict(frame=dict(duration=0, redraw=False), mode="immediate")],
+                    ),
+                    dict(
+                        label="⏮ Reset",
+                        method="animate",
+                        args=[["0"], dict(frame=dict(duration=0, redraw=True), mode="immediate")],
                     ),
                 ],
             )
@@ -451,9 +468,9 @@ def _(S, V, X, go, html, lam, make_subplots, milestones, mo, np, schedule, score
         sliders=[
             dict(
                 active=0,
-                x=0.14,
-                y=-0.02,
-                len=0.52,
+                x=0.07,
+                y=-0.09,
+                len=0.61,
                 yanchor="top",
                 pad=dict(t=0),
                 currentvalue=dict(visible=False),
@@ -462,7 +479,9 @@ def _(S, V, X, go, html, lam, make_subplots, milestones, mo, np, schedule, score
                 steps=[
                     dict(
                         method="animate",
-                        label=milestone_at.get(i, ""),
+                        # Plotly shows only every n-th label on a long slider,
+                        # so milestones are announced in the title instead.
+                        label="",
                         args=[[str(i)], dict(frame=dict(duration=0, redraw=True), mode="immediate")],
                     )
                     for i in range(len(schedule))
@@ -474,7 +493,38 @@ def _(S, V, X, go, html, lam, make_subplots, milestones, mo, np, schedule, score
     # animation frames, so render into an iframe to get a fresh figure (and
     # fresh frames) whenever a control changes. A fixed-height srcdoc iframe
     # is used because mo.iframe auto-resizes to the page and overshoots.
+    # "Next step": play from the current frame to the next milestone, then
+    # stop. Plotly reports each frame it shows, so the position stays in sync
+    # with the slider, Play all, Pause and Reset.
+    next_step_js = (
+        """
+        const gd = document.getElementById('{plot_id}');
+        const stops = STOPS;
+        const nFrames = N_FRAMES;
+        let current = 0;
+        gd.on('plotly_animatingframe', (e) => { current = parseInt(e.name, 10); });
+        gd.on('plotly_buttonclicked', (e) => {
+            if (!e.button.label.startsWith('⏭')) return;
+            const target = stops.find((s) => s > current);
+            if (target === undefined) {
+                Plotly.animate(gd, ['0'], {frame: {duration: 0, redraw: true}, mode: 'immediate'});
+                return;
+            }
+            const names = [];
+            for (let i = current + 1; i <= target && i < nFrames; i++) names.push(String(i));
+            Plotly.animate(gd, names, {
+                frame: {duration: DURATION, redraw: true},
+                transition: {duration: 0},
+                mode: 'immediate',
+            });
+        });
+        """
+        .replace("STOPS", json.dumps(stops[1:]))
+        .replace("N_FRAMES", str(len(schedule)))
+        .replace("DURATION", str(speed.value))
+    )
     page = fig.to_html(
+        post_script=next_step_js,
         include_plotlyjs="cdn",
         full_html=True,
         auto_play=False,

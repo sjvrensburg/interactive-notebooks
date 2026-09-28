@@ -18,7 +18,11 @@ This interactive tool shows that **PCA is a change of coordinates by a rotation*
 
 ### Animated 3D Rotation
 
-A Plotly animation with **▶ Play / ❚❚ Pause** buttons and a scrubber:
+A Plotly animation with a scrubber and four buttons:
+
+- **⏭ Next step** plays one rotation, then pauses on a caption saying what has just been identified (e.g. "PC1 identified — it lies along the x-axis, λ₁ = …")
+- **▶ Play all** runs straight through, with a short hold at each milestone
+- **❚❚ Pause** and **⏮ Reset**
 
 | Step | Plane | Rotates about | What happens |
 |:---:|:---:|:---:|:---|
